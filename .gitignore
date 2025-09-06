@@ -1,0 +1,446 @@
+# ===========================================
+# FLUTTER/DART PROJECT .GITIGNORE
+# ===========================================
+
+# Miscellaneous
+*.class
+*.lock
+*.log
+*.pyc
+*.swp
+*.swo
+*~
+.buildlog/
+.history
+
+# Flutter repo-specific
+/bin/cache/
+/bin/internal/bootstrap.bat
+/bin/internal/bootstrap.sh
+/bin/mingit/
+/dev/benchmarks/mega_gallery/
+/dev/bots/.recipe_deps
+/dev/bots/android_tools/
+/dev/devicelab/ABresults*.json
+/dev/docs/doc/
+/dev/docs/flutter.docs.zip
+/dev/docs/lib/
+/dev/docs/pubspec.yaml
+/dev/integration_tests/**/xcuserdata
+/dev/integration_tests/**/Pods
+/packages/flutter/coverage/
+version
+analysis_benchmark.json
+
+# packages file containing multi-root paths
+.packages.generated
+
+# Flutter/Dart/Pub related
+**/doc/api/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+**/generated_plugin_registrant.dart
+.packages
+.pub-preload-cache/
+.pub/
+build/
+flutter_*.png
+linked_*.ds
+unlinked.ds
+unlinked_spec.ds
+
+# Additional Flutter/Dart files
+**/test/coverage/
+**/coverage/
+**/analysis_options.yaml.bak
+**/dart_code_metrics.yaml.bak
+**/pubspec.lock
+
+# Android related
+**/android/**/gradle-wrapper.jar
+.gradle/
+**/android/captures/
+**/android/gradlew
+**/android/gradlew.bat
+**/android/local.properties
+**/android/**/GeneratedPluginRegistrant.java
+**/android/key.properties
+*.jks
+**/android/app/debug/
+**/android/app/profile/
+**/android/app/release/
+
+# iOS/XCode related
+**/ios/**/*.mode1v3
+**/ios/**/*.mode2v3
+**/ios/**/*.moved-aside
+**/ios/**/*.pbxuser
+**/ios/**/*.perspectivev3
+**/ios/**/*sync/
+**/ios/**/.sconsign.dblite
+**/ios/**/.tags*
+**/ios/**/.vagrant/
+**/ios/**/DerivedData/
+**/ios/**/Icon?
+**/ios/**/Pods/
+**/ios/**/.symlinks/
+**/ios/**/profile
+**/ios/**/xcuserdata
+**/ios/.generated/
+**/ios/Flutter/.last_build_id
+**/ios/Flutter/App.framework
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/ephemeral
+**/ios/Flutter/app.flx
+**/ios/Flutter/app.zip
+**/ios/Flutter/flutter_assets/
+**/ios/Flutter/flutter_export_environment.sh
+**/ios/ServiceDefinitions.json
+**/ios/Runner/GeneratedPluginRegistrant.*
+
+# macOS
+**/Flutter/ephemeral/
+**/Pods/
+**/macos/Flutter/GeneratedPluginRegistrant.swift
+**/macos/Flutter/ephemeral
+**/xcuserdata/
+
+# Windows
+**/windows/flutter/generated_plugin_registrant.cc
+**/windows/flutter/generated_plugin_registrant.h
+**/windows/flutter/generated_plugins.cmake
+
+# Linux
+**/linux/flutter/generated_plugin_registrant.cc
+**/linux/flutter/generated_plugin_registrant.h
+**/linux/flutter/generated_plugins.cmake
+
+# Web
+**/web/flutter_service_worker.js
+**/web/manifest.json
+
+# Coverage
+coverage/
+
+# Symbols
+app.*.symbols
+
+# ===========================================
+# IDE AND EDITOR FILES
+# ===========================================
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Visual Studio Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Android Studio
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# ===========================================
+# FIREBASE AND SENSITIVE CONFIGURATION
+# ===========================================
+
+# Firebase configuration files
+**/android/app/google-services.json
+**/ios/Runner/GoogleService-Info.plist
+**/ios/firebase_app_id_file.json
+**/macos/Runner/GoogleService-Info.plist
+**/windows/firebase_app_id_file.json
+**/linux/firebase_app_id_file.json
+**/web/firebase-config.js
+
+# Firebase service account keys
+**/firebase-service-account.json
+**/service-account-key.json
+**/firebase-adminsdk-*.json
+
+# ===========================================
+# ENVIRONMENT AND SECRETS
+# ===========================================
+
+# Environment files
+.env
+.env.local
+.env.production
+.env.staging
+.env.development
+.env.test
+
+# API Keys and secrets
+**/api_keys.dart
+**/secrets.dart
+**/config/secrets.dart
+**/lib/secrets/
+**/lib/config/secrets/
+
+# Configuration files with sensitive data
+**/config.json
+**/settings.json
+**/secrets.json
+**/credentials.json
+**/auth.json
+**/app_config.json
+
+# ===========================================
+# DATABASE FILES
+# ===========================================
+
+# Database files
+**/*.db
+**/*.sqlite
+**/*.sqlite3
+**/*.db-journal
+**/*.db-wal
+**/*.db-shm
+
+# ===========================================
+# BUILD AND TEMPORARY FILES
+# ===========================================
+
+# Build outputs
+**/build/
+**/dist/
+**/out/
+**/target/
+**/bin/
+**/obj/
+
+# Temporary files
+**/tmp/
+**/temp/
+**/.tmp/
+**/.temp/
+**/*.tmp
+**/*.temp
+**/*.bak
+**/*.backup
+**/*.old
+**/*.orig
+
+# ===========================================
+# OPERATING SYSTEM FILES
+# ===========================================
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+.AppleDouble
+.LSOverride
+Icon
+._*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ===========================================
+# LOGS AND DEBUGGING
+# ===========================================
+
+# Log files
+**/logs/
+**/*.log
+**/debug.log
+**/error.log
+**/access.log
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+**/lerna-debug.log*
+
+# Runtime data
+**/pids/
+**/*.pid
+**/*.seed
+**/*.pid.lock
+
+# ===========================================
+# DEPENDENCIES AND PACKAGES
+# ===========================================
+
+# Node.js
+**/node_modules/
+**/jspm_packages/
+**/.npm
+**/.yarn-integrity
+**/.yarn/cache
+**/.yarn/unplugged
+**/.yarn/build-state.yml
+**/.yarn/install-state.gz
+**/.pnp.*
+
+# Package files
+**/*.tgz
+**/*.tar.gz
+
+# ===========================================
+# CERTIFICATES AND SECURITY
+# ===========================================
+
+# Certificate files
+**/*.pem
+**/*.crt
+**/*.cer
+**/*.p12
+**/*.pfx
+**/*.key
+**/*.keystore
+
+# ===========================================
+# ARCHIVES AND BACKUPS
+# ===========================================
+
+# Archive files
+**/*.zip
+**/*.rar
+**/*.7z
+**/*.tar
+**/*.gz
+**/*.bz2
+
+# ===========================================
+# TESTING AND COVERAGE
+# ===========================================
+
+# Test results
+**/test-results/
+**/test-reports/
+**/.nyc_output/
+**/.coverage/
+**/coverage/
+**/.lcov
+
+# ===========================================
+# PERFORMANCE AND MONITORING
+# ===========================================
+
+# Performance monitoring
+**/.lighthouseci/
+**/lighthouse-report.html
+
+# Sentry
+**/.sentryclirc
+
+# ===========================================
+# WEB DEVELOPMENT
+# ===========================================
+
+# Webpack
+**/webpack-stats.json
+
+# Cache directories
+**/.cache/
+**/.parcel-cache/
+**/.fusebox/
+**/.dynamodb/
+
+# Next.js
+**/.next/
+**/out/
+
+# Nuxt.js
+**/.nuxt/
+**/dist/
+
+# Vuepress
+**/.vuepress/dist/
+
+# Serverless
+**/.serverless/
+
+# ===========================================
+# CODE QUALITY AND LINTING
+# ===========================================
+
+# ESLint
+**/.eslintcache
+
+# Prettier
+**/.prettiercache
+
+# Stylelint
+**/.stylelintcache
+
+# Microbundle
+**/.rpt2_cache/
+**/.rts2_cache_cjs/
+**/.rts2_cache_es/
+**/.rts2_cache_umd/
+
+# ===========================================
+# EXCEPTIONS (FILES THAT SHOULD BE COMMITTED)
+# ===========================================
+
+# Template files (these should be committed)
+!**/*.env.template
+!**/*.example
+!**/google-services.json.template
+!**/GoogleService-Info.plist.template
+!**/firebase-config.js.template
+
+# Default configuration files
+!**/ios/**/default.mode1v3
+!**/ios/**/default.mode2v3
+!**/ios/**/default.pbxuser
+!**/ios/**/default.perspectivev3
+!/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
+!/dev/ci/**/Gemfile.lock
+
+# Documentation
+!README.md
+!CHANGELOG.md
+!LICENSE
+!CONTRIBUTING.md
+!CONFIGURACAO.md
+
+# Configuration templates
+!analysis_options.yaml
+!dart_code_metrics.yaml
+!pubspec.yaml
