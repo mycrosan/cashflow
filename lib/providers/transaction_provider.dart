@@ -6,9 +6,11 @@ import '../models/category.dart';
 import '../services/database_service.dart';
 import '../services/api_service.dart';
 import '../providers/recurring_transaction_provider.dart';
+import 'auth_provider.dart';
 
 class TransactionProvider extends ChangeNotifier {
   final DatabaseService _databaseService = DatabaseService();
+  AuthProvider? _authProvider;
   
   List<Transaction> _transactions = [];
   List<Member> _members = [];
@@ -33,6 +35,14 @@ class TransactionProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
   DateTime get selectedMonth => _selectedMonth;
+  
+  // Definir AuthProvider
+  void setAuthProvider(AuthProvider authProvider) {
+    _authProvider = authProvider;
+  }
+  
+  // Obter ID do usuário logado
+  int? get _currentUserId => _authProvider?.currentUser?.id;
   
   // Cálculos financeiros
   double get totalIncome {
@@ -163,7 +173,7 @@ class TransactionProvider extends ChangeNotifier {
       _transactions = await _databaseService.getTransactions(
         startDate: startOfMonth,
         endDate: endOfMonth,
-        userId: 1, // TODO: Pegar do usuário logado
+        userId: _currentUserId,
       );
       
       print('Transações carregadas do banco: ${_transactions.length}');
@@ -303,7 +313,7 @@ class TransactionProvider extends ChangeNotifier {
       final existingTransactions = await _databaseService.getTransactions(
         startDate: startOfDay,
         endDate: endOfDay,
-        userId: 1, // TODO: Pegar do usuário logado
+        userId: _currentUserId,
       );
       
       return existingTransactions.any((transaction) => 

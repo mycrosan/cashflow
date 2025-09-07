@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import '../models/category.dart';
 import '../services/database_service.dart';
+import 'auth_provider.dart';
 
 class CategoryProvider extends ChangeNotifier {
   final DatabaseService _databaseService = DatabaseService();
+  AuthProvider? _authProvider;
   List<Category> _categories = [];
   bool _isLoading = false;
   String? _error;
@@ -11,6 +13,14 @@ class CategoryProvider extends ChangeNotifier {
   List<Category> get categories => _categories;
   bool get isLoading => _isLoading;
   String? get error => _error;
+  
+  // Definir AuthProvider
+  void setAuthProvider(AuthProvider authProvider) {
+    _authProvider = authProvider;
+  }
+  
+  // Obter ID do usuário logado
+  int? get _currentUserId => _authProvider?.currentUser?.id;
 
   // Categorias padrão para receitas
   static const List<Map<String, dynamic>> defaultIncomeCategories = [
@@ -41,7 +51,7 @@ class CategoryProvider extends ChangeNotifier {
       _error = null;
       notifyListeners();
 
-      _categories = await _databaseService.getCategories(userId: 1); // TODO: Pegar do usuário logado
+      _categories = await _databaseService.getCategories(userId: _currentUserId);
       
       // Se não há categorias, criar as padrão
       if (_categories.isEmpty) {

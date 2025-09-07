@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import '../models/member.dart';
 import '../services/database_service.dart';
+import 'auth_provider.dart';
 
 class MemberProvider extends ChangeNotifier {
   final DatabaseService _databaseService = DatabaseService();
+  AuthProvider? _authProvider;
   List<Member> _members = [];
   bool _isLoading = false;
   String? _error;
@@ -11,6 +13,14 @@ class MemberProvider extends ChangeNotifier {
   List<Member> get members => _members;
   bool get isLoading => _isLoading;
   String? get error => _error;
+  
+  // Definir AuthProvider
+  void setAuthProvider(AuthProvider authProvider) {
+    _authProvider = authProvider;
+  }
+  
+  // Obter ID do usuário logado
+  int? get _currentUserId => _authProvider?.currentUser?.id;
 
   // Carregar todos os membros
   Future<void> loadMembers() async {
@@ -19,7 +29,7 @@ class MemberProvider extends ChangeNotifier {
       _error = null;
       notifyListeners();
 
-      _members = await _databaseService.getMembers(userId: 1); // TODO: Pegar do usuário logado
+      _members = await _databaseService.getMembers(userId: _currentUserId);
       _isLoading = false;
       notifyListeners();
     } catch (e) {

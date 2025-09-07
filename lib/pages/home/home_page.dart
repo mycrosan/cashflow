@@ -129,8 +129,15 @@ class _HomePageState extends State<HomePage> {
       final memberProvider = context.read<MemberProvider>();
       final categoryProvider = context.read<CategoryProvider>();
       final databaseService = context.read<DatabaseService>();
+      final authProvider = context.read<AuthProvider>();
       
       print('Inicializando dados da tela inicial...');
+      print('Usuário logado: ${authProvider.currentUser?.name} (ID: ${authProvider.currentUser?.id})');
+      
+      // Configurar AuthProvider nos providers
+      transactionProvider.setAuthProvider(authProvider);
+      memberProvider.setAuthProvider(authProvider);
+      categoryProvider.setAuthProvider(authProvider);
       
       // Remover tabelas duplicadas primeiro
       print('Verificando e removendo tabelas duplicadas...');
@@ -937,10 +944,17 @@ class _HomePageState extends State<HomePage> {
     final quickEntryProvider = context.read<QuickEntryProvider>();
     final memberProvider = context.read<MemberProvider>();
     final categoryProvider = context.read<CategoryProvider>();
+    final authProvider = context.read<AuthProvider>();
     
     try {
       print('=== HOME: INICIANDO ATUALIZAÇÃO DA TELA INICIAL ===');
       print('Mês selecionado: ${_selectedMonth.month}/${_selectedMonth.year}');
+      print('Usuário logado: ${authProvider.currentUser?.name} (ID: ${authProvider.currentUser?.id})');
+      
+      // Configurar AuthProvider nos providers
+      transactionProvider.setAuthProvider(authProvider);
+      memberProvider.setAuthProvider(authProvider);
+      categoryProvider.setAuthProvider(authProvider);
       
       // Atualizar todos os providers
       await memberProvider.loadMembers();
