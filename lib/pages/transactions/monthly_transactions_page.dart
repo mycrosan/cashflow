@@ -444,7 +444,7 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
                           ),
                           SizedBox(height: 4),
                           Text(
-                            'Pagas:',
+                            'Recebidas:',
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.green[700],
