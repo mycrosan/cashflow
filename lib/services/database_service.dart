@@ -10,7 +10,7 @@ import '../config/app_config.dart';
 class DatabaseService {
   static Database? _database;
   static String get _databaseName => AppConfig.databaseName;
-  static int get _databaseVersion => 12;
+  static int get _databaseVersion => 13;
 
   // Tabelas
   static const String _tableUsers = 'usuarios';
@@ -100,10 +100,12 @@ class DatabaseService {
         status_sincronizacao TEXT NOT NULL DEFAULT 'synced',
         pago INTEGER NOT NULL DEFAULT 0,
         data_pagamento TEXT,
+        usuario_id INTEGER NOT NULL,
         criado_em TEXT NOT NULL,
         atualizado_em TEXT NOT NULL,
         FOREIGN KEY (responsavel_id) REFERENCES $_tableMembers (id),
-        FOREIGN KEY (recorrencia_id) REFERENCES $_tableRecurringTransactions (id)
+        FOREIGN KEY (recorrencia_id) REFERENCES $_tableRecurringTransactions (id),
+        FOREIGN KEY (usuario_id) REFERENCES $_tableUsers (id)
       )
     ''');
 
@@ -211,6 +213,24 @@ class DatabaseService {
         // Versão 12: Corrigir consultas SQL para usar nomes em português
         await _recreateAllTables(db);
       }
+      
+      if (oldVersion < 13) {
+        // Versão 13: Adicionar campo usuario_id na tabela de transações
+        try {
+          await db.execute('ALTER TABLE $_tableTransactions ADD COLUMN usuario_id INTEGER');
+          print('Campo usuario_id adicionado na tabela $_tableTransactions');
+          
+          // Atualizar registros existentes com usuario_id = 1 (usuário padrão)
+          await db.execute('UPDATE $_tableTransactions SET usuario_id = 1 WHERE usuario_id IS NULL');
+          print('Registros existentes de transações atualizados com usuario_id = 1');
+          
+          print('Migração para versão 13 concluída com sucesso');
+        } catch (e) {
+          print('Erro na migração para versão 13: $e');
+          // Se der erro, recriar todas as tabelas
+          await _recreateAllTables(db);
+        }
+      }
     } catch (e) {
       // Em caso de erro, recriar todas as tabelas
       await _recreateAllTables(db);
@@ -227,11 +247,17 @@ class DatabaseService {
         categoria TEXT NOT NULL,
         responsavel_id INTEGER NOT NULL,
         observacoes TEXT,
+        imagem_recibo TEXT,
+        recorrencia_id INTEGER,
+        status_sincronizacao TEXT NOT NULL DEFAULT 'synced',
         pago INTEGER NOT NULL DEFAULT 0,
         data_pagamento TEXT,
+        usuario_id INTEGER NOT NULL,
         criado_em TEXT NOT NULL,
         atualizado_em TEXT NOT NULL,
-        FOREIGN KEY (responsavel_id) REFERENCES $_tableMembers (id)
+        FOREIGN KEY (responsavel_id) REFERENCES $_tableMembers (id),
+        FOREIGN KEY (recorrencia_id) REFERENCES $_tableRecurringTransactions (id),
+        FOREIGN KEY (usuario_id) REFERENCES $_tableUsers (id)
       )
     ''');
   }
@@ -323,9 +349,23 @@ class DatabaseService {
     return await db.insert(_tableMembers, member.toJson());
   }
 
-  Future<List<Member>> getMembers() async {
+  Future<List<Member>> getMembers({int? userId}) async {
     final db = await database;
-    final maps = await db.query(_tableMembers, orderBy: 'nome ASC');
+    
+    String whereClause = '';
+    List<dynamic> whereArgs = [];
+    
+    if (userId != null) {
+      whereClause = 'usuario_id = ?';
+      whereArgs.add(userId);
+    }
+    
+    final maps = await db.query(
+      _tableMembers,
+      where: whereClause.isEmpty ? null : whereClause,
+      whereArgs: whereArgs.isEmpty ? null : whereArgs,
+      orderBy: 'nome ASC',
+    );
     return maps.map((map) => Member.fromJson(map)).toList();
   }
 
@@ -368,18 +408,41 @@ class DatabaseService {
     return await db.insert(_tableCategories, category.toJson());
   }
 
-  Future<List<Category>> getCategories() async {
+  Future<List<Category>> getCategories({int? userId}) async {
     final db = await database;
-    final maps = await db.query(_tableCategories, orderBy: 'nome ASC');
+    
+    String whereClause = '';
+    List<dynamic> whereArgs = [];
+    
+    if (userId != null) {
+      whereClause = 'usuario_id = ?';
+      whereArgs.add(userId);
+    }
+    
+    final maps = await db.query(
+      _tableCategories,
+      where: whereClause.isEmpty ? null : whereClause,
+      whereArgs: whereArgs.isEmpty ? null : whereArgs,
+      orderBy: 'nome ASC',
+    );
     return maps.map((map) => Category.fromJson(map)).toList();
   }
 
-  Future<List<Category>> getCategoriesByType(String type) async {
+  Future<List<Category>> getCategoriesByType(String type, {int? userId}) async {
     final db = await database;
+    
+    String whereClause = 'tipo = ?';
+    List<dynamic> whereArgs = [type];
+    
+    if (userId != null) {
+      whereClause += ' AND usuario_id = ?';
+      whereArgs.add(userId);
+    }
+    
     final maps = await db.query(
       _tableCategories,
-      where: 'tipo = ?',
-      whereArgs: [type],
+      where: whereClause,
+      whereArgs: whereArgs,
       orderBy: 'nome ASC',
     );
     return maps.map((map) => Category.fromJson(map)).toList();
@@ -431,6 +494,7 @@ class DatabaseService {
     DateTime? endDate,
     String? category,
     int? memberId,
+    int? userId,
   }) async {
     final db = await database;
     
@@ -459,12 +523,19 @@ class DatabaseService {
       whereClause += 'responsavel_id = ?';
       whereArgs.add(memberId);
     }
+    
+    if (userId != null) {
+      if (whereClause.isNotEmpty) whereClause += ' AND ';
+      whereClause += 'usuario_id = ?';
+      whereArgs.add(userId);
+    }
 
     print('=== DATABASE SERVICE: Consultando transações ===');
     print('WHERE: $whereClause');
     print('WHERE ARGS: $whereArgs');
     print('StartDate: ${startDate?.toIso8601String()}');
     print('EndDate: ${endDate?.toIso8601String()}');
+    print('UserId: $userId');
 
     final maps = await db.query(
       _tableTransactions,
@@ -549,11 +620,21 @@ class DatabaseService {
     return await db.insert(_tableRecurringTransactions, data);
   }
 
-  Future<List<RecurringTransaction>> getRecurringTransactions() async {
+  Future<List<RecurringTransaction>> getRecurringTransactions({int? userId}) async {
     final db = await database;
+    
+    String whereClause = 'ativo = 1';
+    List<dynamic> whereArgs = [];
+    
+    if (userId != null) {
+      whereClause += ' AND usuario_id = ?';
+      whereArgs.add(userId);
+    }
+    
     final maps = await db.query(
       _tableRecurringTransactions,
-      where: 'ativo = 1',
+      where: whereClause,
+      whereArgs: whereArgs.isEmpty ? null : whereArgs,
       orderBy: 'data_inicio ASC',
     );
 

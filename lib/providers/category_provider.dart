@@ -41,7 +41,7 @@ class CategoryProvider extends ChangeNotifier {
       _error = null;
       notifyListeners();
 
-      _categories = await _databaseService.getCategories();
+      _categories = await _databaseService.getCategories(userId: 1); // TODO: Pegar do usuário logado
       
       // Se não há categorias, criar as padrão
       if (_categories.isEmpty) {

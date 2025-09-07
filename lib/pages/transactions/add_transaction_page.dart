@@ -329,6 +329,7 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
         category: _selectedCategory!.name,
         associatedMember: _selectedMember!,
         notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+        userId: 1, // TODO: Pegar do usuário logado
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       );

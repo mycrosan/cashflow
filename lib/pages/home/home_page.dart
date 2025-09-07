@@ -15,10 +15,10 @@ import '../../widgets/loading_skeleton.dart';
 
 import '../transactions/add_transaction_page.dart';
 import '../transactions/monthly_transactions_page.dart';
-import '../transactions/transaction_loader_demo.dart';
 import '../reports/reports_page.dart';
 import '../members/members_page.dart';
 import '../categories/categories_page.dart';
+import '../profile/profile_page.dart';
 import '../../widgets/transaction_loader.dart';
 
 class HomePage extends StatefulWidget {
@@ -239,7 +239,7 @@ class _HomePageState extends State<HomePage> {
                 value: 'profile',
                 child: Row(
                   children: [
-                    Icon(Icons.person),
+                    Icon(Icons.person, color: Colors.indigo),
                     SizedBox(width: 8),
                     Text('Perfil'),
                   ],
@@ -249,19 +249,9 @@ class _HomePageState extends State<HomePage> {
                 value: 'settings',
                 child: Row(
                   children: [
-                    Icon(Icons.settings),
+                    Icon(Icons.settings, color: Colors.indigo),
                     SizedBox(width: 8),
                     Text('Configurações'),
-                  ],
-                ),
-              ),
-              PopupMenuItem(
-                value: 'demo',
-                child: Row(
-                  children: [
-                    Icon(Icons.animation),
-                    SizedBox(width: 8),
-                    Text('Demonstração do Transaction Loader'),
                   ],
                 ),
               ),
@@ -269,7 +259,7 @@ class _HomePageState extends State<HomePage> {
                 value: 'logout',
                 child: Row(
                   children: [
-                    Icon(Icons.logout),
+                    Icon(Icons.logout, color: Colors.red),
                     SizedBox(width: 8),
                     Text('Sair'),
                   ],
@@ -724,16 +714,19 @@ class _HomePageState extends State<HomePage> {
   void _handleMenuAction(String action) {
     switch (action) {
       case 'profile':
-        // TODO: Implementar página de perfil
-        break;
-      case 'settings':
-        // TODO: Implementar configurações
-        break;
-      case 'demo':
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => const TransactionLoaderDemo(),
+            builder: (context) => const ProfilePage(),
+          ),
+        );
+        break;
+      case 'settings':
+        // TODO: Implementar configurações
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Configurações em breve!'),
+            backgroundColor: Colors.orange,
           ),
         );
         break;

@@ -26,7 +26,7 @@ if (flutterVersionName == null) {
 
 android {
     namespace "com.example.fluxo_caixa_familiar"
-    compileSdkVersion 35
+    compileSdkVersion 34
     ndkVersion flutter.ndkVersion
 
     compileOptions {

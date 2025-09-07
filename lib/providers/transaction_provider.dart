@@ -163,6 +163,7 @@ class TransactionProvider extends ChangeNotifier {
       _transactions = await _databaseService.getTransactions(
         startDate: startOfMonth,
         endDate: endOfMonth,
+        userId: 1, // TODO: Pegar do usuário logado
       );
       
       print('Transações carregadas do banco: ${_transactions.length}');
@@ -302,6 +303,7 @@ class TransactionProvider extends ChangeNotifier {
       final existingTransactions = await _databaseService.getTransactions(
         startDate: startOfDay,
         endDate: endOfDay,
+        userId: 1, // TODO: Pegar do usuário logado
       );
       
       return existingTransactions.any((transaction) => 

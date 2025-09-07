@@ -19,7 +19,7 @@ class MemberProvider extends ChangeNotifier {
       _error = null;
       notifyListeners();
 
-      _members = await _databaseService.getMembers();
+      _members = await _databaseService.getMembers(userId: 1); // TODO: Pegar do usuário logado
       _isLoading = false;
       notifyListeners();
     } catch (e) {

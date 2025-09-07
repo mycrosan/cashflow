@@ -21,7 +21,7 @@ class RecurringTransactionProvider extends ChangeNotifier {
       _error = null;
       notifyListeners();
 
-      _recurringTransactions = await _databaseService.getRecurringTransactions();
+      _recurringTransactions = await _databaseService.getRecurringTransactions(userId: 1); // TODO: Pegar do usuário logado
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -239,6 +239,7 @@ class RecurringTransactionProvider extends ChangeNotifier {
               associatedMember: recurringTransaction.associatedMember,
               notes: recurringTransaction.notes ?? 'Transação recorrente',
               recurringTransactionId: recurringTransaction.id,
+              userId: recurringTransaction.userId,
               createdAt: DateTime.now(),
               updatedAt: DateTime.now(),
             );
@@ -357,6 +358,7 @@ class RecurringTransactionProvider extends ChangeNotifier {
             associatedMember: recurringTransaction.associatedMember,
             notes: recurringTransaction.notes ?? 'Transação recorrente',
             recurringTransactionId: recurringTransaction.id,
+            userId: recurringTransaction.userId,
             createdAt: DateTime.now(),
             updatedAt: DateTime.now(),
           );

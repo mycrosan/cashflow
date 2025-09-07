@@ -1010,14 +1010,20 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
   Future<void> _showPaymentDateDialog(Transaction transaction) async {
     DateTime? selectedDate = DateTime.now();
     
+    // Determinar se é receita ou despesa
+    final isIncome = transaction.isIncome;
+    final title = isIncome ? 'Data de Recebimento' : 'Data de Pagamento';
+    final description = isIncome ? 'Selecione a data do recebimento:' : 'Selecione a data do pagamento:';
+    final todayButtonText = isIncome ? 'Receber Hoje' : 'Pagar Hoje';
+    
     final result = await showDialog<DateTime>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Data de Pagamento'),
+        title: Text(title),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Selecione a data do pagamento:'),
+            Text(description),
             SizedBox(height: 16),
             ElevatedButton(
               onPressed: () async {
@@ -1039,7 +1045,7 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
               onPressed: () {
                 Navigator.of(context).pop(DateTime.now());
               },
-              child: Text('Pagar Hoje'),
+              child: Text(todayButtonText),
             ),
           ],
         ),

@@ -15,6 +15,7 @@ class Transaction {
   final String syncStatus; // 'synced', 'pending', 'conflict'
   final bool isPaid;
   final DateTime? paidDate;
+  final int userId;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -30,6 +31,7 @@ class Transaction {
     this.syncStatus = 'synced',
     this.isPaid = false,
     this.paidDate,
+    required this.userId,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -60,6 +62,7 @@ class Transaction {
       paidDate: json['data_pagamento'] != null 
         ? DateTime.parse(json['data_pagamento'])
         : null,
+      userId: json['usuario_id'] ?? 1,
       createdAt: json['criado_em'] is String 
         ? DateTime.parse(json['criado_em'])
         : DateTime.now(),
@@ -82,6 +85,7 @@ class Transaction {
       'status_sincronizacao': syncStatus,
       'pago': isPaid ? 1 : 0,
       'data_pagamento': paidDate?.toIso8601String(),
+      'usuario_id': userId,
       'criado_em': createdAt.toIso8601String(),
       'atualizado_em': updatedAt.toIso8601String(),
     };
@@ -102,6 +106,7 @@ class Transaction {
       'syncStatus': syncStatus,
       'isPaid': isPaid,
       'paidDate': paidDate,
+      'userId': userId,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
     };
@@ -131,6 +136,7 @@ class Transaction {
       paidDate: data['paidDate'] != null 
         ? (data['paidDate'] as Timestamp).toDate()
         : null,
+      userId: data['userId'] ?? 1,
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       updatedAt: (data['updatedAt'] as Timestamp).toDate(),
     );
@@ -148,6 +154,7 @@ class Transaction {
     String? syncStatus,
     bool? isPaid,
     DateTime? paidDate,
+    int? userId,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -163,6 +170,7 @@ class Transaction {
       syncStatus: syncStatus ?? this.syncStatus,
       isPaid: isPaid ?? this.isPaid,
       paidDate: paidDate ?? this.paidDate,
+      userId: userId ?? this.userId,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -171,11 +179,11 @@ class Transaction {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is Transaction && other.id == id;
+    return other is Transaction && other.id == id && other.userId == userId;
   }
 
   @override
-  int get hashCode => id.hashCode;
+  int get hashCode => Object.hash(id, userId);
 
   @override
   String toString() {

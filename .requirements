@@ -1,127 +1,338 @@
-{
-  "role": "You are a Senior Flutter Developer specializing in Clean Architecture, Feature-first organization, and flutter_bloc for state management. You carefully provide accurate, factual, thoughtful answers, and always follow best practices. You are brilliant at reasoning and write clean, modular, DRY, bug-free, production-ready code.",
-  "instructions": [
-    "Follow the user’s requirements carefully & to the letter.",
-    "First describe your plan in pseudocode, step-by-step, in great detail.",
-    "After confirmation, implement the code in Flutter.",
-    "Always use correct, DRY, bug-free, fully functional code aligned with the rules.",
-    "Focus on readability over micro-optimizations.",
-    "Leave no TODOs or placeholders. Ensure the code is complete.",
-    "Use descriptive variable and function names.",
-    "Event handlers must start with the 'handle' prefix.",
-    "Use const constructors where possible for immutability and performance.",
-    "Apply accessibility features (semantics, high contrast, screen reader support).",
-    "Always provide required imports."
-  ],
-  "applicationRequirements": {
-    "description": "CashFlow is a mobile application for personal and family financial management. It tracks incomes and expenses by member, supports recurring transactions, monthly reporting, quick entry, and receipt scanning. Works offline with optional synchronization with a remote API.",
-    "endpoints": {
-      "syncTransactions": "POST /transactions/sync",
-      "getTransactions": "GET /transactions",
-      "createTransaction": "POST /transactions",
-      "updateTransaction": "PUT /transactions/{id}",
-      "deleteTransaction": "DELETE /transactions/{id}",
-      "getMembers": "GET /members",
-      "createMember": "POST /members",
-      "updateMember": "PUT /members/{id}",
-      "deleteMember": "DELETE /members/{id}"
-    },
-    "features": {
-      "userManagement": {
-        "formFields": ["Name", "Email", "Password", "Profile Picture (optional)"],
-        "memberManagement": {
-          "fields": ["Name", "Relation", "Profile Picture (optional)"],
-          "actions": ["Add", "Edit", "Delete"]
-        }
-      },
-      "transactionManagement": {
-        "transactionTypes": ["income", "expense"],
-        "fields": [
-          "Value",
-          "Date",
-          "Category",
-          "Associated Member",
-          "Notes",
-          "Receipt Image (optional)",
-          "RecurringTransactionId (optional)"
-        ],
-        "recurringTransactions": {
-          "fields": ["Frequency", "Category", "Value", "Associated Member"],
-          "actions": ["Add", "Edit", "Delete", "Notify Before Due Date"]
-        },
-        "quickEntry": "Add value and category in a single step",
-        "receiptScanner": "Use camera + OCR to extract value, date, and category"
-      },
-      "reportingAndAnalytics": {
-        "monthlyOverview": ["Total Incomes", "Total Expenses", "Balance", "Filter by Member or Category"],
-        "charts": ["Expenses by Category", "Incomes vs Expenses", "Balance Evolution"],
-        "exportOptions": ["PDF", "CSV"]
-      },
-      "offlineAndSync": {
-        "offlineStorage": "Store all data locally with SQLite or Hive",
-        "sync": "Optional sync with API, handle conflict resolution"
-      },
-      "notifications": {
-        "features": ["Upcoming Recurring Payments", "Monthly Summary Alerts"]
-      }
-    },
-    "technical": {
-      "framework": "Flutter 3 + Dart",
-      "stateManagement": ["flutter_bloc"],
-      "localStorage": ["Hive", "SQLite"],
-      "networking": ["Dio", "HttpClient"],
-      "testing": ["Flutter Test", "Widget Tests", "Unit Tests"],
-      "coverage": "Minimum 80%",
-      "uiDesign": "Clean, intuitive, responsive for mobile screens",
-      "accessibility": ["High contrast mode", "Screen reader friendly", "Keyboard nav", "Semantics labels"]
-    }
-  },
-  "architectureGuidelines": {
-    "cleanArchitecture": [
-      "Presentation, Domain, Data layers strictly separated",
-      "Dependencies point inwards (Domain has no external dependencies)",
-      "Domain: entities, repositories (interfaces), use cases",
-      "Data: data sources, models, repository implementations",
-      "Presentation: blocs/cubits, pages, widgets"
-    ],
-    "featureFirst": [
-      "Organize by features instead of layers",
-      "Each feature has its own data, domain, and presentation folders",
-      "Shared code goes into a core module"
-    ],
-    "blocGuidelines": [
-      "Use Bloc for complex logic, Cubit for simple state",
-      "Use Freezed for immutable states and union types",
-      "Handle loading, error, and success explicitly",
-      "Avoid business logic in UI components",
-      "Use BlocProvider for DI"
-    ],
-    "errorHandling": [
-      "Use Either<Failure, Success> from Dartz",
-      "Define Failure types (ServerFailure, CacheFailure, NetworkFailure, ValidationFailure)",
-      "Map errors properly between layers",
-      "Provide user-friendly error messages"
-    ],
-    "testing": [
-      "Unit test domain and data",
-      "Bloc tests with mock repositories",
-      "Widget tests for UI",
-      "Follow Given-When-Then pattern"
-    ],
-    "dependencyInjection": [
-      "Use GetIt for service locator",
-      "Register dependencies by feature",
-      "Lazy initialization where appropriate",
-      "Factories for transient objects, singletons for services"
-    ]
-  },
-  "codeGuidelines": [
-    "Use early returns for readability",
-    "Use const constructors whenever possible",
-    "Do not leave TODOs or placeholders",
-    "Use descriptive names",
-    "Keep code modular and DRY",
-    "Handle API errors gracefully",
-    "Implement offline-first with sync fallback"
-  ]
+# FLUXO FAMILIAR - CASHFLOW APP
+## Especificações Técnicas e Requisitos do Projeto
+
+### 🎯 VISÃO GERAL
+**Fluxo Familiar** é um aplicativo de controle financeiro familiar desenvolvido em Flutter 3, focado em simplicidade, elegância e funcionalidade premium para gestão de receitas e despesas familiares.
+
+---
+
+## 🎨 DESIGN SYSTEM & UI/UX
+
+### **Princípios de Design**
+- **Moderno e Premium**: Interface elegante inspirada em apps fintech de primeira linha
+- **Minimalista**: Foco na funcionalidade sem poluição visual
+- **Responsivo**: Adaptável a diferentes tamanhos de tela
+- **Acessível**: Suporte a temas claro e escuro
+- **Consistente**: Padrões visuais uniformes em toda a aplicação
+
+### **Paleta de Cores**
+- **Primária**: Indigo (Material Design)
+- **Receitas**: Verde (#4CAF50)
+- **Despesas**: Vermelho (#F44336)
+- **Neutros**: Tons de cinza para textos e backgrounds
+- **Acentos**: Cores suaves para elementos secundários
+
+### **Tipografia**
+- **Fonte Principal**: Roboto (Material Design)
+- **Hierarquia**: Títulos, subtítulos, corpo e captions bem definidos
+- **Localização**: Português Brasileiro (pt_BR)
+
+---
+
+## 🚀 TRANSACTION LOADER - ESPECIFICAÇÕES TÉCNICAS
+
+### **Requisitos Obrigatórios**
+```dart
+// Widget reutilizável com animações premium
+class TransactionLoader extends StatefulWidget {
+  final String message;
+  final double size;
+  final Color primaryColor;
+  final Color secondaryColor;
+  final Duration animationDuration;
+  final bool showProgress;
 }
+```
+
+### **Características Visuais**
+- ✅ **Premium & Elegante**: Não usar CircularProgressIndicator básico
+- ✅ **Tendências Modernas**: Gradientes, glassmorphism, neumorphism
+- ✅ **Animação Contextual**: Implica "transação em progresso"
+- ✅ **Efeitos Sutis**: AnimatedOpacity, AnimatedScale, AnimatedContainer
+- ✅ **Tipografia Limpa**: Mensagem "Processing your transaction..." em português
+- ✅ **Responsivo**: Funciona em light e dark themes
+- ✅ **Reutilizável**: Widget independente e configurável
+
+### **Implementação Técnica**
+```dart
+// Animações em camadas
+- Camada 1: Círculo principal com gradiente rotativo
+- Camada 2: Círculo secundário com pulso
+- Camada 3: Pontos orbitais com delay escalonado
+- Camada 4: Efeito glassmorphism com blur
+- Camada 5: Texto com fade in/out
+```
+
+### **Estados de Loading**
+1. **Inicial**: "Carregando dados iniciais..."
+2. **Transação**: "Processando sua transação..."
+3. **Mês**: "Carregando dados do mês..."
+4. **Sincronização**: "Sincronizando com a nuvem..."
+
+---
+
+## 🏗️ ARQUITETURA & ESTRUTURA
+
+### **Padrões Arquiteturais**
+- **Provider Pattern**: Gerenciamento de estado reativo
+- **Singleton**: Services compartilhados (DatabaseService, SyncProvider)
+- **Repository Pattern**: Separação de dados e lógica de negócio
+- **MVVM**: Separação clara de responsabilidades
+
+### **Estrutura de Pastas**
+```
+lib/
+├── core/                 # Configurações centrais
+├── models/               # Modelos de dados
+├── providers/            # Gerenciamento de estado
+├── services/             # Serviços (API, Database, Firebase)
+├── pages/                # Telas da aplicação
+├── widgets/              # Componentes reutilizáveis
+└── config/              # Configurações da aplicação
+```
+
+### **Providers Implementados**
+- `AuthProvider`: Autenticação e sessão
+- `TransactionProvider`: Gestão de transações
+- `MemberProvider`: Gestão de membros familiares
+- `CategoryProvider`: Gestão de categorias
+- `ReportProvider`: Geração de relatórios
+- `SyncProvider`: Sincronização com Firebase
+- `QuickEntryProvider`: Entrada rápida de dados
+- `RecurringTransactionProvider`: Transações recorrentes
+
+---
+
+## 💾 PERSISTÊNCIA & DADOS
+
+### **Banco de Dados Local**
+- **SQLite**: Banco principal com sqflite
+- **Tabelas**: usuarios, responsaveis, categorias, lancamentos, recorrencias
+- **Migrações**: Versionamento automático do schema
+- **Relacionamentos**: Foreign keys para integridade
+
+### **Sincronização Firebase**
+- **Firestore**: Armazenamento na nuvem
+- **Autenticação**: Firebase Auth
+- **Estrutura**: `users/{userId}/transactions`, `users/{userId}/members`
+- **Offline**: Funcionamento completo sem internet
+- **Sync**: Sincronização manual e automática
+
+### **Modelos de Dados**
+```dart
+// Transaction
+- id, value, category, date, notes
+- associatedMember (relacionamento)
+- isPaid, paidDate, isSynced
+- createdAt, updatedAt
+
+// Member
+- id, name, relation, userId
+- createdAt, updatedAt
+
+// Category
+- id, name, type, userId
+- createdAt, updatedAt
+```
+
+---
+
+## 🔄 FUNCIONALIDADES PRINCIPAIS
+
+### **Gestão de Transações**
+- ✅ Adicionar receitas e despesas
+- ✅ Editar transações existentes
+- ✅ Marcar como pago/recebido
+- ✅ Excluir transações
+- ✅ Transações recorrentes
+- ✅ Busca e filtros
+
+### **Relatórios e Análises**
+- ✅ Resumo mensal (receitas, despesas, saldo)
+- ✅ Relatórios por categoria
+- ✅ Relatórios por membro
+- ✅ Gráficos e visualizações
+- ✅ Exportação de dados
+
+### **Sincronização**
+- ✅ Backup automático na nuvem
+- ✅ Sincronização entre dispositivos
+- ✅ Resolução de conflitos
+- ✅ Indicadores de status
+
+### **Interface do Usuário**
+- ✅ Navegação por meses
+- ✅ Loading states elegantes
+- ✅ Feedback visual (SnackBars, Dialogs)
+- ✅ Pull-to-refresh
+- ✅ Responsive design
+
+---
+
+## 🎯 ESPECIFICAÇÕES TÉCNICAS
+
+### **Flutter & Dependências**
+```yaml
+flutter: ">=3.0.0"
+dependencies:
+  provider: ^6.0.0
+  sqflite: ^2.3.0
+  cloud_firestore: ^4.0.0
+  firebase_auth: ^4.0.0
+  intl: ^0.18.0
+  shared_preferences: ^2.2.0
+```
+
+### **Performance**
+- ✅ Lazy loading de dados
+- ✅ Cache inteligente
+- ✅ Debounce em navegação
+- ✅ Operações assíncronas otimizadas
+- ✅ Memory management
+
+### **Qualidade de Código**
+- ✅ Null safety completo
+- ✅ Error handling robusto
+- ✅ Logs detalhados para debug
+- ✅ Código limpo e documentado
+- ✅ Testes unitários (quando aplicável)
+
+---
+
+## 🌐 LOCALIZAÇÃO & INTERNACIONALIZAÇÃO
+
+### **Idioma Principal**
+- **Português Brasileiro (pt_BR)**
+- Todas as mensagens, labels e textos em português
+- Formatação de moeda: R$ (Real Brasileiro)
+- Formatação de data: DD/MM/YYYY
+
+### **Mensagens do TransactionLoader**
+```dart
+// Estados de loading em português
+"Carregando dados iniciais..."
+"Processando sua transação..."
+"Carregando dados do mês..."
+"Sincronizando com a nuvem..."
+```
+
+---
+
+## 🔧 CONFIGURAÇÃO & DEPLOY
+
+### **Ambiente de Desenvolvimento**
+- **Flutter SDK**: 3.0+
+- **Dart**: 3.0+
+- **IDE**: Android Studio / VS Code
+- **Emulador**: Android/iOS
+
+### **Configuração Firebase**
+- **google-services.json**: Configuração Android
+- **GoogleService-Info.plist**: Configuração iOS
+- **Variáveis de ambiente**: .env para configurações
+
+### **Build & Release**
+- **Debug**: Logs detalhados habilitados
+- **Release**: Otimizações de performance
+- **ProGuard**: Ofuscação de código (Android)
+
+---
+
+## 📱 EXPERIÊNCIA DO USUÁRIO
+
+### **Fluxos Principais**
+1. **Login** → Dashboard → Adicionar Transação
+2. **Dashboard** → Navegar Meses → Ver Relatórios
+3. **Transações** → Marcar Pagamento → Sincronizar
+4. **Configurações** → Backup → Sincronização
+
+### **Estados de Loading**
+- **Inicial**: TransactionLoader com "Carregando dados iniciais..."
+- **Navegação**: TransactionLoader com "Carregando dados do mês..."
+- **Transação**: TransactionLoader com "Processando sua transação..."
+- **Sync**: Indicador no AppBar + TransactionLoader
+
+### **Feedback Visual**
+- **Sucesso**: SnackBar verde
+- **Erro**: SnackBar vermelho
+- **Loading**: TransactionLoader elegante
+- **Confirmação**: Dialogs contextuais
+
+---
+
+## 🎨 DIRETRIZES DE DESIGN
+
+### **TransactionLoader - Especificações Visuais**
+```dart
+// Cores e gradientes
+primaryColor: Theme.of(context).colorScheme.primary
+secondaryColor: Theme.of(context).colorScheme.secondary
+
+// Animações
+- Rotação suave (360° em 2s)
+- Pulsação sincronizada
+- Fade in/out do texto
+- Escala responsiva
+
+// Glassmorphism
+- Backdrop blur
+- Transparência sutil
+- Bordas suaves
+- Sombras elegantes
+```
+
+### **Responsividade**
+- **Mobile**: Layout otimizado para smartphones
+- **Tablet**: Adaptação para telas maiores
+- **Orientation**: Suporte a portrait e landscape
+- **Accessibility**: Suporte a leitores de tela
+
+---
+
+## 🚀 ROADMAP & MELHORIAS FUTURAS
+
+### **Funcionalidades Planejadas**
+- [ ] Relatórios avançados com gráficos
+- [ ] Exportação para PDF/Excel
+- [ ] Notificações push
+- [ ] Modo offline completo
+- [ ] Temas personalizáveis
+- [ ] Backup automático
+
+### **Melhorias Técnicas**
+- [ ] Testes automatizados
+- [ ] CI/CD pipeline
+- [ ] Performance monitoring
+- [ ] Crash reporting
+- [ ] Analytics de uso
+
+---
+
+## 📋 CHECKLIST DE QUALIDADE
+
+### **Código**
+- ✅ Null safety implementado
+- ✅ Error handling robusto
+- ✅ Logs detalhados
+- ✅ Código limpo e documentado
+- ✅ Padrões consistentes
+
+### **UI/UX**
+- ✅ TransactionLoader premium implementado
+- ✅ Animações suaves e elegantes
+- ✅ Responsividade completa
+- ✅ Temas claro/escuro
+- ✅ Feedback visual adequado
+
+### **Funcionalidades**
+- ✅ CRUD completo de transações
+- ✅ Sincronização Firebase
+- ✅ Relatórios funcionais
+- ✅ Navegação intuitiva
+- ✅ Performance otimizada
+
+---
+
+**Última atualização**: Dezembro 2024
+**Versão**: 1.0.0
+**Status**: Produção

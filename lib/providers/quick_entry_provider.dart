@@ -4,7 +4,6 @@ import '../models/transaction.dart';
 import '../models/category.dart';
 import '../models/member.dart';
 import '../services/database_service.dart';
-import 'package:uuid/uuid.dart';
 
 class QuickEntryProvider extends ChangeNotifier {
   final DatabaseService _databaseService = DatabaseService();
@@ -87,6 +86,7 @@ class QuickEntryProvider extends ChangeNotifier {
         ),
         notes: notes,
         receiptImage: receiptImage,
+        userId: 1, // TODO: Pegar do usuário logado
         createdAt: now,
         updatedAt: now,
       );
