@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Member {
   final int? id;
   final String name;
@@ -43,6 +45,33 @@ class Member {
       'criado_em': createdAt.toIso8601String(),
       'atualizado_em': updatedAt.toIso8601String(),
     };
+  }
+
+  /// Converte para formato Firestore
+  Map<String, dynamic> toFirestoreMap() {
+    return {
+      'id': id,
+      'name': name,
+      'relation': relation,
+      'profilePicture': profilePicture,
+      'userId': userId,
+      'createdAt': createdAt,
+      'updatedAt': updatedAt,
+    };
+  }
+
+  /// Cria Member a partir de documento Firestore
+  factory Member.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return Member(
+      id: data['id'] as int?,
+      name: data['name'] ?? '',
+      relation: data['relation'] ?? '',
+      profilePicture: data['profilePicture'],
+      userId: data['userId'] ?? 0,
+      createdAt: (data['createdAt'] as Timestamp).toDate(),
+      updatedAt: (data['updatedAt'] as Timestamp).toDate(),
+    );
   }
 
   Member copyWith({

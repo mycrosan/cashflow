@@ -7,7 +7,7 @@ import 'package:intl/intl.dart';
 
 class ReportProvider extends ChangeNotifier {
   final DatabaseService _databaseService = DatabaseService();
-  final TransactionProvider _transactionProvider = TransactionProvider();
+  TransactionProvider? _transactionProvider;
   bool _isLoading = false;
   String? _error;
   
@@ -17,6 +17,11 @@ class ReportProvider extends ChangeNotifier {
 
   bool get isLoading => _isLoading;
   String? get error => _error;
+
+  // Definir TransactionProvider (deve ser chamado pela HomePage)
+  void setTransactionProvider(TransactionProvider provider) {
+    _transactionProvider = provider;
+  }
 
   // Dados do relatório mensal
   double _totalIncome = 0.0;
@@ -86,11 +91,23 @@ class ReportProvider extends ChangeNotifier {
       _error = null;
       notifyListeners();
 
-      // Usar o novo método do TransactionProvider que inclui recorrências únicas
-      await _transactionProvider.loadTransactionsForMonthWithRecurring(month);
-      
-      // Obter transações filtradas (sem duplicatas)
-      _monthlyTransactions = _transactionProvider.getFilteredTransactionsForMonth(month);
+      // Usar o TransactionProvider se disponível, senão usar método legacy
+      if (_transactionProvider != null) {
+        // Usar o novo método do TransactionProvider que inclui recorrências únicas
+        await _transactionProvider!.loadTransactionsForMonthWithRecurring(month);
+        
+        // Obter transações filtradas (sem duplicatas)
+        _monthlyTransactions = _transactionProvider!.getFilteredTransactionsForMonth(month);
+      } else {
+        // Método legacy - buscar diretamente do banco
+        final startDate = DateTime(month.year, month.month, 1);
+        final endDate = DateTime(month.year, month.month + 1, 0);
+        
+        _monthlyTransactions = await _databaseService.getTransactions(
+          startDate: startDate,
+          endDate: endDate,
+        );
+      }
       
       print('Transações encontradas (após filtro): ${_monthlyTransactions.length}');
 

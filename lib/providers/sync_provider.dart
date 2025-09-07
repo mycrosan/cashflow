@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:async';
+import '../services/firebase_sync_service.dart';
+import '../models/transaction.dart';
+import '../models/member.dart';
+import '../models/category.dart' as cat;
 
 class SyncProvider extends ChangeNotifier {
   static SyncProvider? _instance;
@@ -17,6 +21,12 @@ class SyncProvider extends ChangeNotifier {
   bool _isUpdating = false;
   Timer? _updateDebounceTimer;
   
+  // Controle de sincronização Firebase
+  bool _isSyncing = false;
+  String? _syncStatus;
+  DateTime? _lastSyncTime;
+  int _syncCount = 0;
+  
   // Singleton pattern
   static SyncProvider get instance {
     _instance ??= SyncProvider._internal();
@@ -29,6 +39,10 @@ class SyncProvider extends ChangeNotifier {
   bool get isGlobalOperationInProgress => _isGlobalOperationInProgress;
   bool get isNavigating => _isNavigating;
   bool get isUpdating => _isUpdating;
+  bool get isSyncing => _isSyncing;
+  String? get syncStatus => _syncStatus;
+  DateTime? get lastSyncTime => _lastSyncTime;
+  int get syncCount => _syncCount;
   
   // Controle de operações globais
   Future<void> _cancelGlobalOperation() async {
@@ -128,22 +142,143 @@ class SyncProvider extends ChangeNotifier {
   }
   
   // Limpar timers
-  void dispose() {
+  void _disposeTimers() {
     _navigationDebounceTimer?.cancel();
     _updateDebounceTimer?.cancel();
     _globalOperationCompleter?.complete();
   }
   
+  // === SINCRONIZAÇÃO FIREBASE ===
+
+  /// Executa sincronização completa com Firebase
+  Future<Map<String, dynamic>> syncWithFirebase({
+    required List<Transaction> transactions,
+    required List<Member> members,
+    required List<cat.Category> categories,
+  }) async {
+    if (_isSyncing) {
+      print('=== SYNC PROVIDER: Sincronização já em andamento ===');
+      return {'success': false, 'error': 'Sincronização já em andamento'};
+    }
+
+    try {
+      _isSyncing = true;
+      _syncStatus = 'Iniciando sincronização...';
+      notifyListeners();
+
+      print('=== SYNC PROVIDER: Iniciando sincronização Firebase ===');
+
+      // Inicializar serviço Firebase
+      await FirebaseSyncService.instance.initialize();
+
+      // Verificar se usuário está autenticado
+      if (!FirebaseSyncService.instance.isAuthenticated) {
+        _syncStatus = 'Usuário não autenticado';
+        notifyListeners();
+        return {'success': false, 'error': 'Usuário não autenticado no Firebase'};
+      }
+
+      _syncStatus = 'Sincronizando dados...';
+      notifyListeners();
+
+      // Executar sincronização completa
+      final result = await FirebaseSyncService.instance.syncAllData(
+        transactions: transactions,
+        members: members,
+        categories: categories,
+      );
+
+      // Atualizar status de sincronização
+      await FirebaseSyncService.instance.updateSyncStatus();
+
+      _lastSyncTime = DateTime.now();
+      _syncCount++;
+      _syncStatus = result['success'] ? 'Sincronização concluída' : 'Sincronização com erros';
+      
+      print('=== SYNC PROVIDER: Sincronização concluída ===');
+      print('Resultado: $result');
+
+      return result;
+
+    } catch (e) {
+      _syncStatus = 'Erro na sincronização: $e';
+      print('=== SYNC PROVIDER: Erro na sincronização ===');
+      print('Erro: $e');
+      return {'success': false, 'error': e.toString()};
+    } finally {
+      _isSyncing = false;
+      notifyListeners();
+    }
+  }
+
+  /// Verifica status da sincronização
+  Future<Map<String, dynamic>> getSyncStatus() async {
+    try {
+      await FirebaseSyncService.instance.initialize();
+      final status = await FirebaseSyncService.instance.getSyncStatus();
+      
+      _lastSyncTime = status['lastSync'];
+      _syncCount = status['syncCount'] ?? 0;
+      
+      return status;
+    } catch (e) {
+      return {'error': e.toString()};
+    }
+  }
+
+  /// Limpa dados do usuário no Firebase
+  Future<bool> clearFirebaseData() async {
+    if (_isSyncing) return false;
+
+    try {
+      _isSyncing = true;
+      _syncStatus = 'Limpando dados...';
+      notifyListeners();
+
+      await FirebaseSyncService.instance.initialize();
+      await FirebaseSyncService.instance.clearUserData();
+
+      _syncStatus = 'Dados limpos com sucesso';
+      _lastSyncTime = null;
+      _syncCount = 0;
+
+      return true;
+    } catch (e) {
+      _syncStatus = 'Erro ao limpar dados: $e';
+      return false;
+    } finally {
+      _isSyncing = false;
+      notifyListeners();
+    }
+  }
+
+  /// Verifica se Firebase está configurado
+  Future<bool> isFirebaseConfigured() async {
+    try {
+      await FirebaseSyncService.instance.initialize();
+      return FirebaseSyncService.instance.isAuthenticated;
+    } catch (e) {
+      return false;
+    }
+  }
+
   // Reset de estado
   void reset() {
-    super.dispose();
     _isGlobalOperationInProgress = false;
     _isNavigating = false;
     _isUpdating = false;
-    _navigationDebounceTimer?.cancel();
-    _updateDebounceTimer?.cancel();
-    _globalOperationCompleter?.complete();
+    _isSyncing = false;
+    _syncStatus = null;
+    _lastSyncTime = null;
+    _syncCount = 0;
+    _disposeTimers();
     print('=== SYNC PROVIDER: Estado resetado ===');
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _disposeTimers();
+    super.dispose();
   }
 }

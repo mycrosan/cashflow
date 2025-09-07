@@ -167,6 +167,12 @@ class TransactionProvider extends ChangeNotifier {
       
       print('Transações carregadas do banco: ${_transactions.length}');
       
+      // Log detalhado das transações carregadas
+      for (int i = 0; i < _transactions.length && i < 10; i++) {
+        final t = _transactions[i];
+        print('Transação ${i+1}: ${t.category} - ${t.value} - ${t.date.day}/${t.date.month}/${t.date.year}');
+      }
+      
       notifyListeners();
     } catch (e) {
       print('Erro ao carregar transações: $e');

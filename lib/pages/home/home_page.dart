@@ -7,7 +7,10 @@ import '../../providers/report_provider.dart';
 import '../../providers/quick_entry_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/sync_provider.dart';
+import '../../providers/member_provider.dart';
+import '../../providers/category_provider.dart';
 import '../../services/database_service.dart';
+import '../../models/transaction.dart';
 import '../../widgets/loading_skeleton.dart';
 
 import '../transactions/add_transaction_page.dart';
@@ -39,8 +42,81 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Verificar se os providers foram inicializados e forçar atualização se necessário
+    if (!_isInitialLoading) {
+      final transactionProvider = context.read<TransactionProvider>();
+      final reportProvider = context.read<ReportProvider>();
+      
+      // Se não há dados mas os providers não estão carregando, pode ser que a inicialização não funcionou
+      if (transactionProvider.transactions.isEmpty && 
+          reportProvider.totalIncome == 0 && 
+          reportProvider.totalExpense == 0 &&
+          !transactionProvider.isLoading && 
+          !reportProvider.isLoading) {
+        print('Detectado providers sem dados - tentando reinicializar...');
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _initializeData();
+        });
+      }
+    }
+  }
+
+  @override
   void dispose() {
     super.dispose();
+  }
+
+  // Método de debug para verificar transações no banco
+  Future<void> _debugDatabaseTransactions() async {
+    try {
+      final databaseService = context.read<DatabaseService>();
+      final startOfMonth = DateTime(_selectedMonth.year, _selectedMonth.month, 1);
+      final endOfMonth = DateTime(_selectedMonth.year, _selectedMonth.month + 1, 0);
+      
+      print('=== DEBUG: Verificando transações no banco ===');
+      print('Mês: ${_selectedMonth.month}/${_selectedMonth.year}');
+      print('Período: ${startOfMonth.toIso8601String()} até ${endOfMonth.toIso8601String()}');
+      
+      final transactions = await databaseService.getTransactions(
+        startDate: startOfMonth,
+        endDate: endOfMonth,
+      );
+      
+      print('Transações encontradas no banco: ${transactions.length}');
+      
+      if (transactions.isNotEmpty) {
+        print('Primeiras 5 transações:');
+        for (int i = 0; i < transactions.length && i < 5; i++) {
+          final t = transactions[i];
+          print('${i+1}. ${t.category} - ${t.value} - ${t.date.day}/${t.date.month}/${t.date.year}');
+        }
+      } else {
+        print('Nenhuma transação encontrada para este mês');
+        
+        // Verificar se há transações em outros meses
+        final allTransactions = await databaseService.getTransactions();
+        print('Total de transações no banco: ${allTransactions.length}');
+        
+        if (allTransactions.isNotEmpty) {
+          print('Transações em outros meses:');
+          final monthGroups = <String, List<Transaction>>{};
+          for (final t in allTransactions) {
+            final monthKey = '${t.date.month}/${t.date.year}';
+            monthGroups[monthKey] = (monthGroups[monthKey] ?? [])..add(t);
+          }
+          
+          for (final entry in monthGroups.entries) {
+            print('${entry.key}: ${entry.value.length} transações');
+          }
+        }
+      }
+      
+      print('=== FIM DEBUG ===');
+    } catch (e) {
+      print('Erro no debug: $e');
+    }
   }
 
 
@@ -50,6 +126,8 @@ class _HomePageState extends State<HomePage> {
       final transactionProvider = context.read<TransactionProvider>();
       final reportProvider = context.read<ReportProvider>();
       final quickEntryProvider = context.read<QuickEntryProvider>();
+      final memberProvider = context.read<MemberProvider>();
+      final categoryProvider = context.read<CategoryProvider>();
       final databaseService = context.read<DatabaseService>();
       
       print('Inicializando dados da tela inicial...');
@@ -59,11 +137,42 @@ class _HomePageState extends State<HomePage> {
       await databaseService.removeDuplicateTables();
       
       // Inicializar dados sequencialmente para evitar condições de corrida
+      print('Carregando membros...');
+      await memberProvider.loadMembers();
+      
+      print('Carregando categorias...');
+      await categoryProvider.loadCategories();
+      
+      print('Inicializando transações...');
       await transactionProvider.initialize();
+      
+      // Aguardar um pouco para garantir que o TransactionProvider esteja completamente pronto
+      await Future.delayed(Duration(milliseconds: 100));
+      
+      // Definir o TransactionProvider no ReportProvider
+      reportProvider.setTransactionProvider(transactionProvider);
+      
+      print('Gerando relatório mensal...');
+      print('Mês selecionado para relatório: ${_selectedMonth.month}/${_selectedMonth.year}');
+      
+      // Debug: Verificar transações diretamente no banco
+      await _debugDatabaseTransactions();
+      
       await reportProvider.generateMonthlyReport(_selectedMonth);
+      
+      print('Carregando transações recentes...');
       await quickEntryProvider.loadRecentTransactions();
       
       print('Dados da tela inicial inicializados com sucesso');
+      print('Membros carregados: ${memberProvider.members.length}');
+      print('Categorias carregadas: ${categoryProvider.categories.length}');
+      print('Transações carregadas: ${transactionProvider.transactions.length}');
+      
+      // Forçar atualização da UI após inicialização
+      if (mounted) {
+        setState(() {});
+        print('UI forçada a atualizar após inicialização');
+      }
     } catch (e) {
       print('Erro ao inicializar dados da tela inicial: $e');
     } finally {
@@ -71,6 +180,7 @@ class _HomePageState extends State<HomePage> {
         setState(() {
           _isInitialLoading = false;
         });
+        print('Loading inicial desativado');
       }
     }
   }
@@ -79,17 +189,45 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Fluxo Família'),
+        title: Consumer<SyncProvider>(
+          builder: (context, syncProvider, child) {
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('Fluxo Família'),
+                if (syncProvider.lastSyncTime != null) ...[
+                  SizedBox(width: 8),
+                  Icon(
+                    Icons.cloud_done,
+                    size: 16,
+                    color: Colors.greenAccent,
+                  ),
+                ],
+              ],
+            );
+          },
+        ),
         centerTitle: true,
         backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
         actions: [
-          IconButton(
-            icon: Icon(Icons.sync),
-            onPressed: () {
-              // TODO: Implementar sincronização
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Sincronização em desenvolvimento')),
+          Consumer<SyncProvider>(
+            builder: (context, syncProvider, child) {
+              return IconButton(
+                icon: syncProvider.isSyncing 
+                  ? SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : Icon(Icons.sync),
+                onPressed: syncProvider.isSyncing ? null : _handleSync,
+                tooltip: syncProvider.isSyncing 
+                  ? 'Sincronizando...' 
+                  : 'Sincronizar com Firebase',
               );
             },
           ),
@@ -216,11 +354,28 @@ class _HomePageState extends State<HomePage> {
     
     return Consumer2<TransactionProvider, ReportProvider>(
         builder: (context, transactionProvider, reportProvider, child) {
-          if (transactionProvider.isLoading || reportProvider.isLoading) {
+          // Log para debug
+          print('=== BUILD HOME TAB ===');
+          print('TransactionProvider isLoading: ${transactionProvider.isLoading}');
+          print('ReportProvider isLoading: ${reportProvider.isLoading}');
+          print('TransactionProvider error: ${transactionProvider.error}');
+          print('ReportProvider error: ${reportProvider.error}');
+          print('Transações carregadas: ${transactionProvider.transactions.length}');
+          print('Total receitas: ${reportProvider.totalIncome}');
+          print('Total despesas: ${reportProvider.totalExpense}');
+
+          // Se ainda está carregando inicialmente E não há dados, mostrar skeleton
+          if ((transactionProvider.isLoading || reportProvider.isLoading) && 
+              transactionProvider.transactions.isEmpty && 
+              reportProvider.totalIncome == 0 && 
+              reportProvider.totalExpense == 0) {
+            print('Mostrando skeleton - ainda carregando e sem dados');
             return const HomePageSkeleton();
           }
 
-          if (transactionProvider.error != null) {
+          // Se há erro, mostrar tela de erro
+          if (transactionProvider.error != null || reportProvider.error != null) {
+            print('Mostrando tela de erro');
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -228,7 +383,7 @@ class _HomePageState extends State<HomePage> {
                   Icon(Icons.error, size: 64, color: Colors.red),
                   SizedBox(height: 16),
                   Text(
-                    'Erro: ${transactionProvider.error}',
+                    'Erro: ${transactionProvider.error ?? reportProvider.error}',
                     style: TextStyle(fontSize: 16),
                     textAlign: TextAlign.center,
                   ),
@@ -242,6 +397,10 @@ class _HomePageState extends State<HomePage> {
             );
           }
 
+          // Se chegou até aqui, mostrar dados (mesmo que sejam zeros)
+          print('Mostrando dados da tela inicial');
+          print('Dados finais - Receitas: ${reportProvider.totalIncome}, Despesas: ${reportProvider.totalExpense}');
+          
           return RefreshIndicator(
             onRefresh: () => _refreshData(),
             child: SingleChildScrollView(
@@ -254,13 +413,49 @@ class _HomePageState extends State<HomePage> {
                   _buildMonthHeader(),
                   SizedBox(height: 24),
                   
-                  
                   // Resumo financeiro
                   _buildFinancialSummary(),
                   SizedBox(height: 24),
                   
                   // Ações rápidas
                   _buildQuickActions(),
+                  
+                  // Se não há transações, mostrar mensagem
+                  if (transactionProvider.transactions.isEmpty) ...[
+                    SizedBox(height: 24),
+                    Card(
+                      child: Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.receipt_long,
+                              size: 48,
+                              color: Colors.grey[400],
+                            ),
+                            SizedBox(height: 16),
+                            Text(
+                              'Nenhuma transação encontrada',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              'Adicione sua primeira transação usando os botões acima',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[500],
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -327,11 +522,19 @@ class _HomePageState extends State<HomePage> {
       builder: (context, reportProvider, child) {
         // Log para debug
         print('=== CONSUMER REPORT PROVIDER ===');
+        print('Mês atual: ${_selectedMonth.month}/${_selectedMonth.year}');
         print('Receitas: ${reportProvider.totalIncome}');
         print('Despesas: ${reportProvider.totalExpense}');
         print('Saldo: ${reportProvider.balance}');
         print('Loading: ${reportProvider.isLoading}');
         print('Error: ${reportProvider.error}');
+        print('Transações mensais: ${reportProvider.monthlyTransactions.length}');
+        
+        // Log detalhado das transações
+        for (int i = 0; i < reportProvider.monthlyTransactions.length && i < 5; i++) {
+          final t = reportProvider.monthlyTransactions[i];
+          print('Transação ${i+1}: ${t.category} - ${t.value} - ${t.date.day}/${t.date.month}/${t.date.year}');
+        }
         
         return Card(
           child: Padding(
@@ -567,6 +770,93 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  /// Executa sincronização com Firebase
+  Future<void> _handleSync() async {
+    try {
+      final syncProvider = context.read<SyncProvider>();
+      final transactionProvider = context.read<TransactionProvider>();
+      final memberProvider = context.read<MemberProvider>();
+      final categoryProvider = context.read<CategoryProvider>();
+
+      // Mostrar diálogo de confirmação
+      final shouldSync = await showDialog<bool>(
+        context: context,
+        builder: (context) => MultiProvider(
+          providers: [
+            ChangeNotifierProvider.value(value: transactionProvider),
+            ChangeNotifierProvider.value(value: memberProvider),
+            ChangeNotifierProvider.value(value: categoryProvider),
+          ],
+          child: AlertDialog(
+            title: Text('Sincronizar com Firebase'),
+            content: Consumer3<TransactionProvider, MemberProvider, CategoryProvider>(
+              builder: (context, transactionProvider, memberProvider, categoryProvider, child) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Esta ação irá sincronizar todos os seus dados com a nuvem:'),
+                    SizedBox(height: 16),
+                    Text('• ${transactionProvider.transactions.length} transações'),
+                    Text('• ${memberProvider.members.length} membros'),
+                    Text('• ${categoryProvider.categories.length} categorias'),
+                    SizedBox(height: 16),
+                    Text('Deseja continuar?'),
+                  ],
+                );
+              },
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text('Cancelar'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: Text('Sincronizar'),
+              ),
+            ],
+          ),
+        ),
+      );
+
+      if (shouldSync != true) return;
+
+      // Executar sincronização
+      final result = await syncProvider.syncWithFirebase(
+        transactions: transactionProvider.transactions,
+        members: memberProvider.members,
+        categories: categoryProvider.categories,
+      );
+
+      // Mostrar resultado
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              result['success'] 
+                ? 'Sincronização concluída com sucesso!' 
+                : 'Erro na sincronização: ${result['error']}',
+            ),
+            backgroundColor: result['success'] ? Colors.green : Colors.red,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro na sincronização: $e'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+  }
+
   void _previousMonth() {
     final syncProvider = SyncProvider.instance;
     
@@ -652,17 +942,27 @@ class _HomePageState extends State<HomePage> {
     final transactionProvider = context.read<TransactionProvider>();
     final reportProvider = context.read<ReportProvider>();
     final quickEntryProvider = context.read<QuickEntryProvider>();
+    final memberProvider = context.read<MemberProvider>();
+    final categoryProvider = context.read<CategoryProvider>();
     
     try {
       print('=== HOME: INICIANDO ATUALIZAÇÃO DA TELA INICIAL ===');
       print('Mês selecionado: ${_selectedMonth.month}/${_selectedMonth.year}');
       
-      // Usar os novos métodos que evitam duplicação de recorrências
+      // Atualizar todos os providers
+      await memberProvider.loadMembers();
+      await categoryProvider.loadCategories();
       await transactionProvider.refresh();
+      
+      // Definir o TransactionProvider no ReportProvider
+      reportProvider.setTransactionProvider(transactionProvider);
+      
       await reportProvider.generateMonthlyReport(_selectedMonth);
       await quickEntryProvider.loadRecentTransactions();
       
       print('=== HOME: Todas as operações concluídas ===');
+      print('Membros carregados: ${memberProvider.members.length}');
+      print('Categorias carregadas: ${categoryProvider.categories.length}');
       print('Transações carregadas: ${transactionProvider.transactions.length}');
       print('Transações filtradas do mês: ${transactionProvider.getFilteredTransactionsForMonth(_selectedMonth).length}');
       print('Relatório gerado para: ${reportProvider.totalIncome} receitas, ${reportProvider.totalExpense} despesas');

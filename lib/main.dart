@@ -11,6 +11,7 @@ import 'providers/report_provider.dart';
 import 'providers/quick_entry_provider.dart';
 import 'providers/notification_provider.dart';
 import 'providers/sync_provider.dart';
+import 'services/database_service.dart';
 import 'pages/home/home_page.dart';
 import 'pages/auth/login_page.dart';
 
@@ -25,6 +26,7 @@ class FluxoFamiliaApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        Provider(create: (_) => DatabaseService()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => MemberProvider()),
         ChangeNotifierProvider(create: (_) => CategoryProvider()),

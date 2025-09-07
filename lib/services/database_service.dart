@@ -460,12 +460,27 @@ class DatabaseService {
       whereArgs.add(memberId);
     }
 
+    print('=== DATABASE SERVICE: Consultando transações ===');
+    print('WHERE: $whereClause');
+    print('WHERE ARGS: $whereArgs');
+    print('StartDate: ${startDate?.toIso8601String()}');
+    print('EndDate: ${endDate?.toIso8601String()}');
+
     final maps = await db.query(
       _tableTransactions,
       where: whereClause.isEmpty ? null : whereClause,
       whereArgs: whereArgs.isEmpty ? null : whereArgs,
       orderBy: 'data DESC',
     );
+
+    print('=== DATABASE SERVICE: Resultado da consulta ===');
+    print('Registros encontrados: ${maps.length}');
+    
+    // Log das primeiras 5 transações encontradas
+    for (int i = 0; i < maps.length && i < 5; i++) {
+      final map = maps[i];
+      print('Registro ${i+1}: ID=${map['id']}, Categoria=${map['categoria']}, Valor=${map['valor']}, Data=${map['data']}');
+    }
 
     // Converter para objetos Transaction com relacionamentos
     final transactions = <Transaction>[];
