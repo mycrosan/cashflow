@@ -7,6 +7,7 @@ import '../../providers/recurring_transaction_provider.dart';
 import '../../providers/sync_provider.dart';
 import '../../models/transaction.dart';
 import '../../models/recurring_transaction.dart';
+import '../../widgets/transaction_loader.dart';
 import 'add_transaction_page.dart';
 
 class TransacoesMensaisPage extends StatefulWidget {
@@ -239,20 +240,27 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
             ),
           ],
         ),
-        body: SingleChildScrollView(
-          child: Column(
-            children: [
-              // Controle de meses com setas
-              _buildMonthNavigation(),
-              
-              // Saldo do mês
-              _buildMonthBalance(),
-              
-              // Lista de transações
-              _buildTransactionsList(),
-            ],
-          ),
-        ),
+        body: _isLoadingMonth
+            ? TransactionLoader(
+                message: "Carregando transações do mês...",
+                size: 120.0,
+                primaryColor: Theme.of(context).colorScheme.primary,
+                secondaryColor: Theme.of(context).colorScheme.secondary,
+              )
+            : SingleChildScrollView(
+                child: Column(
+                  children: [
+                    // Controle de meses com setas
+                    _buildMonthNavigation(),
+                    
+                    // Saldo do mês
+                    _buildMonthBalance(),
+                    
+                    // Lista de transações
+                    _buildTransactionsList(),
+                  ],
+                ),
+              ),
     );
   }
 
@@ -272,40 +280,13 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
             Expanded(
               child: Column(
                 children: [
-                  if (_isLoadingMonth) ...[
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Theme.of(context).colorScheme.primary,
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 8),
-                        Text(
-                          'Carregando...',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                        ),
-                      ],
+                  Text(
+                    DateFormat('MMMM yyyy', 'pt_BR').format(_selectedMonth),
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
                     ),
-                  ] else ...[
-                    Text(
-                      DateFormat('MMMM yyyy', 'pt_BR').format(_selectedMonth),
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
+                  ),
                 ],
               ),
             ),
@@ -323,6 +304,22 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
   Widget _buildMonthBalance() {
     return Consumer<TransactionProvider>(
       builder: (context, provider, child) {
+        // Se está carregando o mês, não mostra dados
+        if (_isLoadingMonth) {
+          return Container(
+            height: 150,
+            child: Center(
+              child: Text(
+                'Calculando saldo...',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey[600],
+                ),
+              ),
+            ),
+          );
+        }
+        
         final transactions = provider.getFilteredTransactionsForMonth(_selectedMonth);
         
         // Cálculos separados para receitas e despesas pagas/pendentes
@@ -578,10 +575,29 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
   Widget _buildTransactionsList() {
     return Consumer<TransactionProvider>(
       builder: (context, provider, child) {
+        // Se está carregando o mês, não mostra nada (já está sendo mostrado o loader em tela cheia)
+        if (_isLoadingMonth) {
+          return Container(
+            height: 200,
+            child: Center(
+              child: Text(
+                'Aguarde o carregamento...',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey[600],
+                ),
+              ),
+            ),
+          );
+        }
+        
         if (provider.isLoading) {
           return Container(
             height: 200,
-            child: Center(child: CircularProgressIndicator()),
+            child: TransactionLoader(
+              message: "Carregando transações...",
+              size: 80.0,
+            ),
           );
         }
 

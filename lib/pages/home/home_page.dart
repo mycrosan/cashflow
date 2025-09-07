@@ -7,13 +7,16 @@ import '../../providers/report_provider.dart';
 import '../../providers/quick_entry_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/sync_provider.dart';
+import '../../services/database_service.dart';
 import '../../widgets/loading_skeleton.dart';
 
 import '../transactions/add_transaction_page.dart';
 import '../transactions/monthly_transactions_page.dart';
+import '../transactions/transaction_loader_demo.dart';
 import '../reports/reports_page.dart';
 import '../members/members_page.dart';
 import '../categories/categories_page.dart';
+import '../../widgets/transaction_loader.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -24,6 +27,7 @@ class _HomePageState extends State<HomePage> {
   int _currentIndex = 0;
   DateTime _selectedMonth = DateTime.now();
   bool _isLoadingMonth = false;
+  bool _isInitialLoading = true;
 
   @override
   void initState() {
@@ -46,8 +50,13 @@ class _HomePageState extends State<HomePage> {
       final transactionProvider = context.read<TransactionProvider>();
       final reportProvider = context.read<ReportProvider>();
       final quickEntryProvider = context.read<QuickEntryProvider>();
+      final databaseService = context.read<DatabaseService>();
       
       print('Inicializando dados da tela inicial...');
+      
+      // Remover tabelas duplicadas primeiro
+      print('Verificando e removendo tabelas duplicadas...');
+      await databaseService.removeDuplicateTables();
       
       // Inicializar dados sequencialmente para evitar condições de corrida
       await transactionProvider.initialize();
@@ -57,6 +66,12 @@ class _HomePageState extends State<HomePage> {
       print('Dados da tela inicial inicializados com sucesso');
     } catch (e) {
       print('Erro ao inicializar dados da tela inicial: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isInitialLoading = false;
+        });
+      }
     }
   }
 
@@ -99,6 +114,16 @@ class _HomePageState extends State<HomePage> {
                     Icon(Icons.settings),
                     SizedBox(width: 8),
                     Text('Configurações'),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'demo',
+                child: Row(
+                  children: [
+                    Icon(Icons.animation),
+                    SizedBox(width: 8),
+                    Text('Demonstração do Transaction Loader'),
                   ],
                 ),
               ),
@@ -152,6 +177,16 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildBody() {
+    // Se está carregando inicialmente, mostra o loader em tela cheia
+    if (_isInitialLoading) {
+      return TransactionLoader(
+        message: "Carregando dados iniciais...",
+        size: 120.0,
+        primaryColor: Theme.of(context).colorScheme.primary,
+        secondaryColor: Theme.of(context).colorScheme.secondary,
+      );
+    }
+    
     switch (_currentIndex) {
       case 0:
         return _buildHomeTab();
@@ -169,6 +204,16 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildHomeTab() {
+    // Se está carregando o mês, mostra o loader em tela cheia
+    if (_isLoadingMonth) {
+      return TransactionLoader(
+        message: "Carregando dados do mês...",
+        size: 120.0,
+        primaryColor: Theme.of(context).colorScheme.primary,
+        secondaryColor: Theme.of(context).colorScheme.secondary,
+      );
+    }
+    
     return Consumer2<TransactionProvider, ReportProvider>(
         builder: (context, transactionProvider, reportProvider, child) {
           if (transactionProvider.isLoading || reportProvider.isLoading) {
@@ -480,6 +525,14 @@ class _HomePageState extends State<HomePage> {
         break;
       case 'settings':
         // TODO: Implementar configurações
+        break;
+      case 'demo':
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const TransactionLoaderDemo(),
+          ),
+        );
         break;
       case 'logout':
         _showLogoutDialog();

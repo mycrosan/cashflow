@@ -12,6 +12,7 @@ import '../../providers/member_provider.dart';
 import '../../providers/recurring_transaction_provider.dart';
 import '../../providers/report_provider.dart';
 import '../../providers/quick_entry_provider.dart';
+import '../../widgets/transaction_loader.dart';
 
 // Enum para tipo de transação
 enum TransactionType { income, expense }
@@ -58,6 +59,9 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
     symbol: 'R\$ ',
     decimalDigits: 2,
   );
+  
+  // Loading state
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -223,6 +227,10 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
       return;
     }
 
+    setState(() {
+      _isLoading = true;
+    });
+
     try {
       if (_isRecurring) {
         await _saveRecurringTransaction();
@@ -268,6 +276,12 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
             backgroundColor: Colors.red,
           ),
         );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
       }
     }
   }
@@ -414,69 +428,74 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
         title: Text(pageTitle),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
-      body: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Tipo de transação
-              _buildTypeSelector(),
-              const SizedBox(height: 24),
-              
-              // Valor
-              _buildValueField(),
-              const SizedBox(height: 24),
-              
-              // Descrição
-              _buildDescriptionField(),
-              const SizedBox(height: 24),
-              
-              // Categoria
-              _buildCategoryField(),
-              const SizedBox(height: 24),
-              
-              // Membro
-              _buildMemberField(),
-              const SizedBox(height: 24),
-              
-              // Data
-              _buildDateField(),
-              const SizedBox(height: 24),
-              
-              // Notas
-              _buildNotesField(),
-              const SizedBox(height: 24),
-              
-              // Opção de recorrência
-              _buildRecurrenceToggle(),
-              
-              // Campos de recorrência
-              if (_isRecurring) ...[
-                const SizedBox(height: 16),
-                _buildRecurrenceFields(),
-              ],
-              
-              const SizedBox(height: 32),
-              
-              // Botão salvar
-              ElevatedButton(
-                onPressed: _handleSave,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                ),
-                child: Text(
-                  saveButtonText,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      body: _isLoading
+          ? TransactionLoader(
+              message: "Salvando sua transação...",
+              size: 100.0,
+            )
+          : Form(
+              key: _formKey,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Tipo de transação
+                    _buildTypeSelector(),
+                    const SizedBox(height: 24),
+                    
+                    // Valor
+                    _buildValueField(),
+                    const SizedBox(height: 24),
+                    
+                    // Descrição
+                    _buildDescriptionField(),
+                    const SizedBox(height: 24),
+                    
+                    // Categoria
+                    _buildCategoryField(),
+                    const SizedBox(height: 24),
+                    
+                    // Membro
+                    _buildMemberField(),
+                    const SizedBox(height: 24),
+                    
+                    // Data
+                    _buildDateField(),
+                    const SizedBox(height: 24),
+                    
+                    // Notas
+                    _buildNotesField(),
+                    const SizedBox(height: 24),
+                    
+                    // Opção de recorrência
+                    _buildRecurrenceToggle(),
+                    
+                    // Campos de recorrência
+                    if (_isRecurring) ...[
+                      const SizedBox(height: 16),
+                      _buildRecurrenceFields(),
+                    ],
+                    
+                    const SizedBox(height: 32),
+                    
+                    // Botão salvar
+                    ElevatedButton(
+                      onPressed: _isLoading ? null : _handleSave,
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                      ),
+                      child: Text(
+                        saveButtonText,
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 

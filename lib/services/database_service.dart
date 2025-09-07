@@ -683,6 +683,66 @@ class DatabaseService {
     await db.delete(_tableUsers);
   }
 
+  // Método para remover tabelas duplicadas (sem migrar dados)
+  Future<void> removeDuplicateTables() async {
+    final db = await database;
+    
+    // Lista de tabelas duplicadas para remover
+    final duplicateTables = ['members', 'users', 'sync_log'];
+    
+    for (final tableName in duplicateTables) {
+      try {
+        // Verificar se a tabela existe
+        final result = await db.rawQuery(
+          "SELECT name FROM sqlite_master WHERE type='table' AND name='$tableName'"
+        );
+        
+        if (result.isNotEmpty) {
+          print('Tabela $tableName encontrada, removendo...');
+          
+          // Verificar se há dados na tabela
+          final dataCount = await db.rawQuery("SELECT COUNT(*) as count FROM $tableName");
+          final count = dataCount.first['count'] as int;
+          
+          if (count > 0) {
+            print('Tabela $tableName tem $count registros - removendo sem migrar dados.');
+            
+            // Migração desabilitada - apenas removendo tabelas
+            // if (tableName == 'members') {
+            //   // Código de migração comentado
+            // }
+            
+            // Para users, migrar para usuarios se necessário
+            if (tableName == 'users') {
+              final usuariosData = await db.rawQuery("SELECT COUNT(*) as count FROM usuarios");
+              final usuariosCount = usuariosData.first['count'] as int;
+              
+              if (usuariosCount == 0 && count > 0) {
+                print('Migrando dados de users para usuarios...');
+                
+                await db.rawQuery('''
+                  INSERT INTO usuarios (id, nome, email, senha, foto_perfil, criado_em, atualizado_em)
+                  SELECT id, nome, email, senha, foto_perfil, criado_em, atualizado_em 
+                  FROM users
+                ''');
+                
+                print('Dados migrados com sucesso!');
+              }
+            }
+          }
+          
+          // Remover a tabela
+          await db.execute('DROP TABLE IF EXISTS $tableName');
+          print('Tabela $tableName removida com sucesso!');
+        } else {
+          print('Tabela $tableName não encontrada.');
+        }
+      } catch (e) {
+        print('Erro ao remover tabela $tableName: $e');
+      }
+    }
+  }
+
   Future<void> close() async {
     final db = await database;
     await db.close();
