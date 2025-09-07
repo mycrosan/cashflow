@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'providers/auth_provider.dart';
 import 'providers/member_provider.dart';
 import 'providers/category_provider.dart';
@@ -17,6 +19,17 @@ import 'pages/auth/login_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Inicializar Firebase
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    print('Firebase inicializado com sucesso');
+  } catch (e) {
+    print('Erro ao inicializar Firebase: $e');
+    // Continuar mesmo com erro do Firebase
+  }
   
   runApp(FluxoFamiliaApp());
 }

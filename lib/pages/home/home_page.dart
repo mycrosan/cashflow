@@ -777,6 +777,11 @@ class _HomePageState extends State<HomePage> {
       final transactionProvider = context.read<TransactionProvider>();
       final memberProvider = context.read<MemberProvider>();
       final categoryProvider = context.read<CategoryProvider>();
+      final authProvider = context.read<AuthProvider>();
+
+      // Obter ID do usuário logado
+      final localUserId = authProvider.currentUser?.id ?? 1;
+      print('Iniciando sincronização para usuário: $localUserId');
 
       // Mostrar diálogo de confirmação
       final shouldSync = await showDialog<bool>(
@@ -800,6 +805,8 @@ class _HomePageState extends State<HomePage> {
                     Text('• ${transactionProvider.transactions.length} transações'),
                     Text('• ${memberProvider.members.length} membros'),
                     Text('• ${categoryProvider.categories.length} categorias'),
+                    SizedBox(height: 16),
+                    Text('Usuário: ${authProvider.currentUser?.name ?? 'Desconhecido'}'),
                     SizedBox(height: 16),
                     Text('Deseja continuar?'),
                   ],
@@ -827,6 +834,7 @@ class _HomePageState extends State<HomePage> {
         transactions: transactionProvider.transactions,
         members: memberProvider.members,
         categories: categoryProvider.categories,
+        localUserId: localUserId,
       );
 
       // Mostrar resultado
