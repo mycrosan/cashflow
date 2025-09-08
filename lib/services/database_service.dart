@@ -844,4 +844,38 @@ class DatabaseService {
     await db.close();
     _database = null;
   }
+
+  // ========== MÉTODOS PARA BACKUP ==========
+
+  /// Limpa todos os dados do banco (para restore)
+  Future<void> clearAllData() async {
+    final db = await database;
+    
+    try {
+      await db.transaction((txn) async {
+        // Limpar todas as tabelas em ordem (respeitando foreign keys)
+        await txn.delete(_tableRecurringTransactions);
+        await txn.delete(_tableTransactions);
+        await txn.delete(_tableCategories);
+        await txn.delete(_tableMembers);
+        await txn.delete(_tableUsers);
+        await txn.delete(_tableSyncLog);
+      });
+      
+      print('Todos os dados foram limpos com sucesso');
+    } catch (e) {
+      print('Erro ao limpar dados: $e');
+      rethrow;
+    }
+  }
+
+  /// Obtém todas as transações recorrentes (sem filtro de usuário)
+  Future<List<RecurringTransaction>> getAllRecurringTransactions() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(_tableRecurringTransactions);
+    
+    return List.generate(maps.length, (i) {
+      return RecurringTransaction.fromJson(maps[i]);
+    });
+  }
 }

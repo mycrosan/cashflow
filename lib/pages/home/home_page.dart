@@ -19,6 +19,7 @@ import '../reports/reports_page.dart';
 import '../members/members_page.dart';
 import '../categories/categories_page.dart';
 import '../profile/profile_page.dart';
+import '../backup/backup_page.dart';
 import '../../widgets/transaction_loader.dart';
 
 class HomePage extends StatefulWidget {
@@ -249,6 +250,16 @@ class _HomePageState extends State<HomePage> {
                     Icon(Icons.person, color: Colors.indigo),
                     SizedBox(width: 8),
                     Text('Perfil'),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'backup',
+                child: Row(
+                  children: [
+                    Icon(Icons.backup, color: Colors.blue),
+                    SizedBox(width: 8),
+                    Text('Backup & Restore'),
                   ],
                 ),
               ),
@@ -725,6 +736,14 @@ class _HomePageState extends State<HomePage> {
           context,
           MaterialPageRoute(
             builder: (context) => const ProfilePage(),
+          ),
+        );
+        break;
+      case 'backup':
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => BackupPage(),
           ),
         );
         break;
