@@ -619,12 +619,8 @@ class _AddRecurringTransactionPageState extends State<AddRecurringTransactionPag
           frequency: _selectedFrequency,
           category: _selectedCategory,
           value: finalValue,
-          associatedMember: Member(
+          associatedMember: widget.recurringTransactionToEdit!.associatedMember.copyWith(
             id: _selectedMemberId,
-            name: 'Membro',
-            relation: 'Familiar',
-            userId: 1,
-            createdAt: widget.recurringTransactionToEdit!.createdAt,
             updatedAt: DateTime.now(),
           ),
           startDate: _startDate,

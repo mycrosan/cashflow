@@ -294,6 +294,13 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
       final reportProvider = context.read<ReportProvider>();
       final quickEntryProvider = context.read<QuickEntryProvider>();
       
+      // Se foi uma transação recorrente, também atualizar o provider de recorrências
+      if (_isRecurring) {
+        final recurringProvider = context.read<RecurringTransactionProvider>();
+        await recurringProvider.loadRecurringTransactions();
+        print('=== ADD TRANSACTION: Provider de recorrências atualizado ===');
+      }
+      
       // Atualizar dados sequencialmente para evitar condições de corrida
       await transactionProvider.loadAllTransactions();
       await reportProvider.generateMonthlyReport(DateTime.now());
@@ -339,15 +346,23 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
   }
 
   Future<void> _saveRecurringTransaction() async {
+    print('=== ADD TRANSACTION PAGE: Iniciando salvamento de transação recorrente ===');
+    print('=== ADD TRANSACTION PAGE: recurringTransactionToEdit: ${widget.recurringTransactionToEdit?.id} ===');
+    
     final recurringProvider = context.read<RecurringTransactionProvider>();
     
     if (widget.recurringTransactionToEdit != null) {
+      print('=== ADD TRANSACTION PAGE: Modo de ATUALIZAÇÃO ===');
+      
       // Atualizar recorrência existente
       final updatedRecurring = widget.recurringTransactionToEdit!.copyWith(
         value: double.parse(_getTransactionValue()),
         notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
         category: _selectedCategory!.name,
-        associatedMember: _selectedMember!,
+        associatedMember: widget.recurringTransactionToEdit!.associatedMember.copyWith(
+          id: _selectedMember!.id,
+          updatedAt: DateTime.now(),
+        ),
         startDate: _selectedDate,
         frequency: _getRecurrenceTypeString(_recurrenceType),
         endDate: _endDate,
@@ -356,26 +371,19 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
         updatedAt: DateTime.now(),
       );
       
-      await recurringProvider.updateRecurringTransaction(updatedRecurring);
+      print('=== ADD TRANSACTION PAGE: Transação atualizada preparada: ${updatedRecurring.toJson()} ===');
+      
+      final result = await recurringProvider.updateRecurringTransaction(updatedRecurring);
+      print('=== ADD TRANSACTION PAGE: Resultado da atualização: $result ===');
+      
+      if (!result) {
+        throw Exception('Falha ao atualizar transação recorrente');
+      }
     } else {
-      // Criar nova recorrência
-      RecurringTransaction(
-        id: DateTime.now().millisecondsSinceEpoch,
-        frequency: _getRecurrenceTypeString(_recurrenceType),
-        category: _selectedCategory!.name,
-        value: double.parse(_getTransactionValue()),
-        associatedMember: _selectedMember!,
-        startDate: _selectedDate,
-        endDate: _endDate,
-        maxOccurrences: _maxOccurrences,
-        isActive: 1,
-        notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
-        userId: 1, // TODO: Pegar do usuário logado
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-      );
+      print('=== ADD TRANSACTION PAGE: Modo de CRIAÇÃO ===');
       
-      await recurringProvider.addRecurringTransaction(
+      // Criar nova recorrência
+      final result = await recurringProvider.addRecurringTransaction(
         frequency: _getRecurrenceTypeString(_recurrenceType),
         category: _selectedCategory!.name,
         value: double.parse(_getTransactionValue()),
@@ -385,7 +393,15 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
         maxOccurrences: _maxOccurrences,
         notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
       );
+      
+      print('=== ADD TRANSACTION PAGE: Resultado da criação: $result ===');
+      
+      if (!result) {
+        throw Exception('Falha ao criar transação recorrente');
+      }
     }
+    
+    print('=== ADD TRANSACTION PAGE: Salvamento concluído com sucesso ===');
   }
 
   Future<void> _selectDate(BuildContext context) async {

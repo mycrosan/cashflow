@@ -1076,17 +1076,50 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
     }
   }
 
-  void _showEditTransactionDialog(Transaction transaction) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => AddTransactionPage(
-          transactionToEdit: transaction,
+  void _showEditTransactionDialog(Transaction transaction) async {
+    // Se é uma transação recorrente, buscar a transação recorrente correspondente
+    if (transaction.recurringTransactionId != null) {
+      try {
+        final recurringProvider = Provider.of<RecurringTransactionProvider>(context, listen: false);
+        await recurringProvider.loadRecurringTransactions();
+        
+        final recurringTransaction = recurringProvider.recurringTransactions.firstWhere(
+          (rt) => rt.id == transaction.recurringTransactionId,
+          orElse: () => throw Exception('Transação recorrente não encontrada'),
+        );
+        
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AddTransactionPage(
+              recurringTransactionToEdit: recurringTransaction,
+            ),
+          ),
+        ).then((_) {
+          _loadMonthData();
+        });
+      } catch (e) {
+        print('Erro ao buscar transação recorrente: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao carregar transação recorrente: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } else {
+      // Transação normal
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => AddTransactionPage(
+            transactionToEdit: transaction,
+          ),
         ),
-      ),
-    ).then((_) {
-      _loadMonthData();
-    });
+      ).then((_) {
+        _loadMonthData();
+      });
+    }
   }
 
   void _showRecurringDeleteOptions(Transaction transaction) {

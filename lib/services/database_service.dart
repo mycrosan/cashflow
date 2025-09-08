@@ -654,16 +654,24 @@ class DatabaseService {
   }
 
   Future<int> updateRecurringTransaction(RecurringTransaction recurringTransaction) async {
+    print('=== DATABASE SERVICE: Iniciando atualização de transação recorrente ID: ${recurringTransaction.id} ===');
+    
     final db = await database;
     final data = recurringTransaction.toJson();
     data['responsavel_id'] = recurringTransaction.associatedMember.id;
     
-    return await db.update(
+    print('=== DATABASE SERVICE: Dados para atualização: $data ===');
+    print('=== DATABASE SERVICE: WHERE id = ${recurringTransaction.id} ===');
+    
+    final result = await db.update(
       _tableRecurringTransactions,
       data,
       where: 'id = ?',
       whereArgs: [recurringTransaction.id],
     );
+    
+    print('=== DATABASE SERVICE: Resultado da atualização: $result ===');
+    return result;
   }
 
   Future<int> deleteRecurringTransaction(int id) async {

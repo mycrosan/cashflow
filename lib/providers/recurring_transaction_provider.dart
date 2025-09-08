@@ -105,32 +105,46 @@ class RecurringTransactionProvider extends ChangeNotifier {
   // Atualizar transação recorrente
   Future<bool> updateRecurringTransaction(RecurringTransaction recurringTransaction) async {
     try {
+      print('=== RECURRING PROVIDER: Iniciando atualização de transação recorrente ID: ${recurringTransaction.id} ===');
+      
       _isLoading = true;
       _error = null;
       notifyListeners();
 
       final updatedRecurringTransaction = recurringTransaction.copyWith(updatedAt: DateTime.now());
+      print('=== RECURRING PROVIDER: Transação atualizada preparada: ${updatedRecurringTransaction.toJson()} ===');
+      
       final result = await _databaseService.updateRecurringTransaction(updatedRecurringTransaction);
+      print('=== RECURRING PROVIDER: Resultado da atualização no banco: $result ===');
       
       if (result > 0) {
         final index = _recurringTransactions.indexWhere((rt) => rt.id == recurringTransaction.id);
+        print('=== RECURRING PROVIDER: Índice encontrado na lista: $index ===');
+        
         if (index != -1) {
           _recurringTransactions[index] = updatedRecurringTransaction;
           _recurringTransactions.sort((a, b) => a.startDate.compareTo(b.startDate));
+          print('=== RECURRING PROVIDER: Transação atualizada na lista local ===');
+        } else {
+          print('=== RECURRING PROVIDER: AVISO: Transação não encontrada na lista local ===');
         }
+        
         _isLoading = false;
         notifyListeners();
+        print('=== RECURRING PROVIDER: Atualização concluída com sucesso ===');
         return true;
       } else {
-        _error = 'Erro ao atualizar transação recorrente';
+        _error = 'Erro ao atualizar transação recorrente - nenhuma linha foi afetada';
         _isLoading = false;
         notifyListeners();
+        print('=== RECURRING PROVIDER: ERRO: Nenhuma linha foi afetada na atualização ===');
         return false;
       }
     } catch (e) {
       _error = 'Erro ao atualizar transação recorrente: $e';
       _isLoading = false;
       notifyListeners();
+      print('=== RECURRING PROVIDER: ERRO na atualização: $e ===');
       return false;
     }
   }
