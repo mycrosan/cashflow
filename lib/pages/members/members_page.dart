@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/member_provider.dart';
 import '../../widgets/custom_button.dart';
-import '../../widgets/draggable_fab.dart';
 
 class MembersPage extends StatefulWidget {
   @override
@@ -20,8 +19,7 @@ class _MembersPageState extends State<MembersPage> {
 
   @override
   Widget build(BuildContext context) {
-    return DraggableFABWrapper(
-      child: Scaffold(
+    return Scaffold(
         appBar: AppBar(
           title: Text('Membros da Família'),
           backgroundColor: Theme.of(context).primaryColor,
@@ -146,7 +144,6 @@ class _MembersPageState extends State<MembersPage> {
             );
           },
         ),
-      ),
     );
   }
 

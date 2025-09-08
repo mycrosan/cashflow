@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/category_provider.dart';
 import '../../widgets/custom_button.dart';
-import '../../widgets/draggable_fab.dart';
 
 class CategoriesPage extends StatefulWidget {
   @override
@@ -22,8 +21,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
 
   @override
   Widget build(BuildContext context) {
-    return DraggableFABWrapper(
-      child: Scaffold(
+    return Scaffold(
         appBar: AppBar(
           title: Text('Categorias'),
           backgroundColor: Theme.of(context).primaryColor,
@@ -193,7 +191,6 @@ class _CategoriesPageState extends State<CategoriesPage> {
             ),
           ],
         ),
-      ),
     );
   }
 
