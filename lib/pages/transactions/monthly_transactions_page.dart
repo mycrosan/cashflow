@@ -22,6 +22,7 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
   bool _showIncome = true;
   bool _showExpense = true;
   bool _isLoadingMonth = false;
+  bool _isSearchVisible = false;
   
 
 
@@ -211,28 +212,70 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: TextField(
-            controller: _searchController,
-            decoration: InputDecoration(
-              hintText: 'Buscar transações...',
-              border: InputBorder.none,
-              hintStyle: TextStyle(color: Colors.white70),
-              prefixIcon: Icon(Icons.search, color: Colors.white70),
-            ),
-            style: TextStyle(color: Colors.white, fontSize: 16),
-            onChanged: (value) {
-              setState(() {
-                _searchQuery = value;
-              });
-            },
-          ),
+          title: _isSearchVisible 
+            ? TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: 'Buscar transações...',
+                  border: InputBorder.none,
+                  hintStyle: TextStyle(color: Colors.white70),
+                  prefixIcon: Icon(Icons.search, color: Colors.white70),
+                ),
+                style: TextStyle(color: Colors.white, fontSize: 16),
+                onChanged: (value) {
+                  setState(() {
+                    _searchQuery = value;
+                  });
+                },
+                autofocus: true,
+              )
+            : Row(
+                children: [
+                  // Botão mês anterior
+                  IconButton(
+                    icon: Icon(Icons.chevron_left),
+                    onPressed: _isLoadingMonth ? null : _previousMonth,
+                    tooltip: 'Mês Anterior',
+                  ),
+                  // Título com mês/ano
+                  Expanded(
+                    child: Text(
+                      DateFormat('MMMM yyyy', 'pt_BR').format(_selectedMonth),
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  // Botão próximo mês
+                  IconButton(
+                    icon: Icon(Icons.chevron_right),
+                    onPressed: _isLoadingMonth ? null : _nextMonth,
+                    tooltip: 'Próximo Mês',
+                  ),
+                ],
+              ),
           backgroundColor: Theme.of(context).colorScheme.inversePrimary,
           actions: [
+            // Botão de pesquisa
+            IconButton(
+              icon: Icon(_isSearchVisible ? Icons.close : Icons.search),
+              onPressed: () {
+                setState(() {
+                  _isSearchVisible = !_isSearchVisible;
+                  if (!_isSearchVisible) {
+                    _searchController.clear();
+                    _searchQuery = '';
+                  }
+                });
+              },
+              tooltip: _isSearchVisible ? 'Fechar Pesquisa' : 'Pesquisar',
+            ),
+            // Botão mês atual
             IconButton(
               icon: Icon(Icons.today),
               onPressed: _isLoadingMonth ? null : _goToCurrentMonth,
               tooltip: 'Mês Atual',
             ),
+            // Botão adicionar transação
             IconButton(
               icon: Icon(Icons.add),
               onPressed: _isLoadingMonth ? null : () => _showAddTransactionDialog(context),
@@ -250,9 +293,6 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
             : SingleChildScrollView(
                 child: Column(
                   children: [
-                    // Controle de meses com setas
-                    _buildMonthNavigation(),
-                    
                     // Saldo do mês
                     _buildMonthBalance(),
                     
@@ -264,42 +304,6 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
     );
   }
 
-  Widget _buildMonthNavigation() {
-    return Card(
-      margin: EdgeInsets.all(16),
-      child: Padding(
-        padding: EdgeInsets.all(16),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            IconButton(
-              icon: Icon(Icons.chevron_left),
-              onPressed: _isLoadingMonth ? null : _previousMonth,
-              tooltip: 'Mês Anterior',
-            ),
-            Expanded(
-              child: Column(
-                children: [
-                  Text(
-                    DateFormat('MMMM yyyy', 'pt_BR').format(_selectedMonth),
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            IconButton(
-              icon: Icon(Icons.chevron_right),
-              onPressed: _isLoadingMonth ? null : _nextMonth,
-              tooltip: 'Próximo Mês',
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   Widget _buildMonthBalance() {
     return Consumer<TransactionProvider>(
@@ -703,103 +707,108 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
     final color = isIncome ? Colors.green : Colors.red;
 
     return Card(
-      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 2),
       child: InkWell(
         onTap: () => _showTransactionEditMode(transaction),
         onLongPress: () => _showTransactionOptions(transaction),
         borderRadius: BorderRadius.circular(8),
         child: Padding(
-          padding: EdgeInsets.all(16),
+          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: Row(
             children: [
-              // Informações principais
+              // Informações principais - organizadas em 2 linhas
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Categoria
-                    Text(
-                      transaction.category,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: color,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    // Linha 1: Categoria + Status badges
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            transaction.category,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                              color: color,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        SizedBox(width: 8),
+                        // Badges compactos
+                        if (transaction.isPaid) ...[
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.green.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              'Pago',
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: Colors.green,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 4),
+                        ],
+                        if (transaction.recurringTransactionId != null) ...[
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.blue.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              'Recorrente',
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: Colors.blue,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
-                    SizedBox(height: 4),
+                    SizedBox(height: 3),
                     
-                    // Responsável e data
+                    // Linha 2: Responsável + Data
                     Text(
                       '${transaction.associatedMember.name} • ${DateFormat('dd/MM/yyyy').format(transaction.date)}',
                       style: TextStyle(
-                        fontSize: 13,
+                        fontSize: 12,
                         color: Colors.grey[600],
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    
-                    // Status de pagamento
-                    if (transaction.isPaid) ...[
-                      SizedBox(height: 6),
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: Colors.green.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          transaction.paymentStatus,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.green,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ],
-                    
-                    // Badge de recorrente
-                    if (transaction.recurringTransactionId != null) ...[
-                      SizedBox(height: 4),
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: Colors.blue.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          'Recorrente',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.blue,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ],
                   ],
                 ),
               ),
               
-              SizedBox(width: 12),
+              SizedBox(width: 8),
               
-              // Checkbox e valor
+              // Status de pagamento e valor - lado direito compacto
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Ícone de status de pagamento
+                  // Ícone de status de pagamento - menor
                   GestureDetector(
                     onTap: () => _togglePaymentStatus(transaction),
                     child: Container(
-                      padding: EdgeInsets.all(8),
+                      padding: EdgeInsets.all(6),
                       decoration: BoxDecoration(
                         color: transaction.isPaid 
                           ? Colors.green.withOpacity(0.1)
                           : Colors.orange.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(16),
                       ),
                       child: Icon(
                         transaction.isPaid 
@@ -808,18 +817,18 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
                         color: transaction.isPaid 
                           ? Colors.green
                           : Colors.orange,
-                        size: 24,
+                        size: 18,
                       ),
                     ),
                   ),
-                  SizedBox(height: 8),
+                  SizedBox(height: 4),
                   
-                  // Valor
+                  // Valor - menor
                   Text(
                     _formatCurrency(transaction.value),
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                      fontSize: 14,
                       color: color,
                     ),
                     textAlign: TextAlign.end,
