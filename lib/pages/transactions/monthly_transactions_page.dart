@@ -275,12 +275,6 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
               onPressed: _isLoadingMonth ? null : _goToCurrentMonth,
               tooltip: 'Mês Atual',
             ),
-            // Botão adicionar transação
-            IconButton(
-              icon: Icon(Icons.add),
-              onPressed: _isLoadingMonth ? null : () => _showAddTransactionDialog(context),
-              tooltip: 'Adicionar Transação',
-            ),
           ],
         ),
         body: _isLoadingMonth

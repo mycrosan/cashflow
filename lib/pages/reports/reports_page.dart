@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/report_provider.dart';
 import '../../widgets/custom_button.dart';
+import '../../widgets/draggable_fab.dart';
 import 'package:intl/intl.dart';
 
 class ReportsPage extends StatefulWidget {
@@ -12,7 +13,8 @@ class ReportsPage extends StatefulWidget {
 class _ReportsPageState extends State<ReportsPage> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return DraggableFABWrapper(
+      child: Scaffold(
       appBar: AppBar(
         title: Text('Relatórios'),
         backgroundColor: Theme.of(context).primaryColor,
@@ -206,6 +208,7 @@ class _ReportsPageState extends State<ReportsPage> {
           );
         },
       ),
+    ),
     );
   }
 

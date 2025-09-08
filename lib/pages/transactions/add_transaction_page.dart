@@ -23,11 +23,13 @@ enum RecurrenceType { daily, weekly, monthly, yearly }
 class AddTransactionPage extends StatefulWidget {
   final Transaction? transactionToEdit;
   final RecurringTransaction? recurringTransactionToEdit;
+  final TransactionType? initialTransactionType;
 
   const AddTransactionPage({
     Key? key,
     this.transactionToEdit,
     this.recurringTransactionToEdit,
+    this.initialTransactionType,
   }) : super(key: key);
 
   @override
@@ -83,6 +85,9 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
       _loadTransactionData();
     } else if (widget.recurringTransactionToEdit != null) {
       _loadRecurringTransactionData();
+    } else if (widget.initialTransactionType != null) {
+      // Definir tipo inicial se fornecido
+      _selectedType = widget.initialTransactionType!;
     }
     
     WidgetsBinding.instance.addPostFrameCallback((_) {

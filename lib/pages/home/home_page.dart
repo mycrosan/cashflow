@@ -12,6 +12,7 @@ import '../../providers/category_provider.dart';
 import '../../services/database_service.dart';
 import '../../models/transaction.dart';
 import '../../widgets/loading_skeleton.dart';
+import '../../widgets/draggable_fab.dart';
 
 import '../transactions/add_transaction_page.dart';
 import '../transactions/monthly_transactions_page.dart';
@@ -195,7 +196,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return DraggableFABWrapper(
+      child: Scaffold(
       appBar: AppBar(
         title: Consumer<SyncProvider>(
           builder: (context, syncProvider, child) {
@@ -319,6 +321,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
+    ),
     );
   }
 
