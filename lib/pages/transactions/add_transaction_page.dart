@@ -534,19 +534,19 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
           children: [
             Expanded(
               child: _buildTypeButton(
-                TransactionType.expense,
-                'Despesa',
-                Icons.remove_circle_outline,
-                Colors.red,
+                TransactionType.income,
+                'Receita',
+                Icons.add_circle_outline,
+                Colors.green,
               ),
             ),
             const SizedBox(width: 8),
             Expanded(
               child: _buildTypeButton(
-                TransactionType.income,
-                'Receita',
-                Icons.add_circle_outline,
-                Colors.green,
+                TransactionType.expense,
+                'Despesa',
+                Icons.remove_circle_outline,
+                Colors.red,
               ),
             ),
           ],

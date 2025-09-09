@@ -670,7 +670,11 @@ class _HomePageState extends State<HomePage> {
                     () async {
                       final result = await Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => AddTransactionPage()),
+                        MaterialPageRoute(
+                          builder: (context) => AddTransactionPage(
+                            initialTransactionType: TransactionType.income,
+                          ),
+                        ),
                       );
                       
                       // Se retornou com sucesso, atualizar dados
@@ -689,7 +693,11 @@ class _HomePageState extends State<HomePage> {
                     () async {
                       final result = await Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => AddTransactionPage()),
+                        MaterialPageRoute(
+                          builder: (context) => AddTransactionPage(
+                            initialTransactionType: TransactionType.expense,
+                          ),
+                        ),
                       );
                       
                       // Se retornou com sucesso, atualizar dados
