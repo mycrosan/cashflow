@@ -38,6 +38,14 @@ dependencies:
   
   # Charts & Analytics
   fl_chart: ^0.66.0
+  syncfusion_flutter_charts: ^29.1.38
+  
+  # PDF Generation
+  pdf: ^3.10.7
+  printing: ^5.11.1
+  
+  # Math & Statistics
+  collection: ^1.17.2
   
   # Image & Camera
   image_picker: ^1.0.7

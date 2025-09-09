@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../providers/report_provider.dart';
 import '../../widgets/custom_button.dart';
 import 'package:intl/intl.dart';
+import 'advanced_reports_page.dart';
 
 class ReportsPage extends StatefulWidget {
   @override
@@ -37,10 +38,76 @@ class _ReportsPageState extends State<ReportsPage> {
                 ),
                 SizedBox(height: 24),
 
-                // Resumo mensal
+                // Botão para relatórios avançados
+                Card(
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => AdvancedReportsPage(),
+                        ),
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(12),
+                    child: Padding(
+                      padding: EdgeInsets.all(20),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.indigo[100],
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(
+                              Icons.analytics,
+                              color: Colors.indigo[700],
+                              size: 32,
+                            ),
+                          ),
+                          SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Relatórios Avançados',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.indigo[700],
+                                  ),
+                                ),
+                                SizedBox(height: 4),
+                                Text(
+                                  'Gráficos interativos, insights inteligentes e análises preditivas',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Icon(
+                            Icons.arrow_forward_ios,
+                            color: Colors.grey[400],
+                            size: 16,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 24),
+
+                // Resumo mensal compacto
                 Card(
                   child: Padding(
-                    padding: EdgeInsets.all(16),
+                    padding: EdgeInsets.all(12),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -48,31 +115,32 @@ class _ReportsPageState extends State<ReportsPage> {
                           'Resumo Mensal',
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
+                            fontSize: 16,
                           ),
                         ),
-                        SizedBox(height: 16),
+                        SizedBox(height: 12),
                         Row(
                           children: [
                             Expanded(
-                              child: _buildSummaryCard(
+                              child: _buildCompactSummaryCard(
                                 'Receitas',
                                 reportProvider.totalIncome,
                                 Colors.green,
                                 Icons.trending_up,
                               ),
                             ),
-                            SizedBox(width: 12),
+                            SizedBox(width: 8),
                             Expanded(
-                              child: _buildSummaryCard(
+                              child: _buildCompactSummaryCard(
                                 'Despesas',
                                 reportProvider.totalExpense,
                                 Colors.red,
                                 Icons.trending_down,
                               ),
                             ),
-                            SizedBox(width: 12),
+                            SizedBox(width: 8),
                             Expanded(
-                              child: _buildSummaryCard(
+                              child: _buildCompactSummaryCard(
                                 'Saldo',
                                 reportProvider.balance,
                                 reportProvider.balance >= 0 ? Colors.green : Colors.red,
@@ -209,40 +277,45 @@ class _ReportsPageState extends State<ReportsPage> {
     );
   }
 
-  Widget _buildSummaryCard(String label, double value, Color color, IconData icon) {
+  Widget _buildCompactSummaryCard(String label, double value, Color color, IconData icon) {
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.3)),
+        color: color.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withOpacity(0.2), width: 1),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: color, size: 32),
-          SizedBox(height: 8),
+          Icon(icon, color: color, size: 18),
+          SizedBox(height: 4),
           Text(
             label,
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 10,
               color: color,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
             ),
             textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
-          SizedBox(height: 4),
+          SizedBox(height: 2),
           Text(
             NumberFormat.currency(
               locale: 'pt_BR',
               symbol: 'R\$',
-              decimalDigits: 2,
+              decimalDigits: 0,
             ).format(value),
             style: TextStyle(
-              fontSize: 16,
+              fontSize: 12,
               fontWeight: FontWeight.bold,
               color: color,
             ),
             textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
