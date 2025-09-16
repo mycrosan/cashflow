@@ -85,6 +85,10 @@ class RecurringTransactionProvider extends ChangeNotifier {
         final newRecurringTransaction = recurringTransaction.copyWith(id: recurringTransactionId);
         _recurringTransactions.add(newRecurringTransaction);
         _recurringTransactions.sort((a, b) => a.startDate.compareTo(b.startDate));
+        
+        // Gerar transações futuras automaticamente para os próximos 12 meses
+        await _generateFutureTransactions(newRecurringTransaction);
+        
         _isLoading = false;
         notifyListeners();
         return true;
@@ -99,6 +103,70 @@ class RecurringTransactionProvider extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
       return false;
+    }
+  }
+
+  // Gerar transações futuras automaticamente para uma recorrência
+  Future<void> _generateFutureTransactions(RecurringTransaction recurringTransaction) async {
+    try {
+      print('=== RECURRING PROVIDER: Gerando transações futuras para recorrência ${recurringTransaction.id} ===');
+      
+      final now = DateTime.now();
+      final currentMonth = DateTime(now.year, now.month, 1);
+      
+      // Gerar transações para os próximos 12 meses
+      for (int i = 0; i < 12; i++) {
+        final targetMonth = DateTime(currentMonth.year, currentMonth.month + i, 1);
+        
+        // Verificar se a recorrência se aplica a este mês
+        final endOfMonth = DateTime(targetMonth.year, targetMonth.month + 1, 0);
+        if (recurringTransaction.startDate.isAfter(endOfMonth) || 
+            (recurringTransaction.endDate != null && recurringTransaction.endDate!.isBefore(targetMonth))) {
+          continue;
+        }
+        
+        final dates = _getRecurringDatesForMonth(
+          recurringTransaction,
+          targetMonth,
+          endOfMonth,
+        );
+        
+        for (final date in dates) {
+          // Verificar se já existe no banco
+          final exists = await checkRecurringTransactionExists(
+            recurringTransactionId: recurringTransaction.id!,
+            date: date,
+          );
+          
+          if (!exists) {
+            final transaction = Transaction(
+              value: recurringTransaction.value,
+              date: date,
+              category: recurringTransaction.category,
+              associatedMember: recurringTransaction.associatedMember,
+              notes: recurringTransaction.notes ?? 'Transação recorrente',
+              recurringTransactionId: recurringTransaction.id,
+              userId: recurringTransaction.userId,
+              createdAt: DateTime.now(),
+              updatedAt: DateTime.now(),
+            );
+            
+            // Inserir no banco de dados
+            final transactionId = await _databaseService.insertTransaction(transaction);
+            if (transactionId > 0) {
+              print('Transação futura criada: ${transaction.category} - ${date.day}/${date.month}/${date.year}');
+              
+              // Log para sincronização
+              await _databaseService.logSyncAction('lancamentos', transactionId, 'create');
+            }
+          }
+        }
+      }
+      
+      print('=== RECURRING PROVIDER: Transações futuras geradas com sucesso ===');
+      
+    } catch (e) {
+      print('Erro ao gerar transações futuras: $e');
     }
   }
 
@@ -156,9 +224,16 @@ class RecurringTransactionProvider extends ChangeNotifier {
       _error = null;
       notifyListeners();
 
+      print('=== RECURRING PROVIDER: Deletando recorrência $id ===');
+      
+      // Primeiro, remover todas as transações órfãs desta recorrência
+      await _removeOrphanedTransactions(id);
+      
+      // Depois, deletar a recorrência do banco
       final result = await _databaseService.deleteRecurringTransaction(id);
       if (result > 0) {
         _recurringTransactions.removeWhere((rt) => rt.id == id);
+        print('=== RECURRING PROVIDER: Recorrência $id deletada com sucesso ===');
         _isLoading = false;
         notifyListeners();
         return true;
@@ -173,6 +248,48 @@ class RecurringTransactionProvider extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
       return false;
+    }
+  }
+
+  // Remover todas as transações órfãs de uma recorrência específica
+  Future<void> _removeOrphanedTransactions(int recurringTransactionId) async {
+    try {
+      print('=== RECURRING PROVIDER: Removendo transações órfãs da recorrência $recurringTransactionId ===');
+      
+      // Buscar todas as transações que referenciam esta recorrência
+      // Vamos buscar em um período amplo para garantir que pegamos todas
+      final now = DateTime.now();
+      final startDate = DateTime(now.year - 1, 1, 1); // 1 ano atrás
+      final endDate = DateTime(now.year + 2, 12, 31); // 2 anos no futuro
+      
+      final allTransactions = await _databaseService.getTransactions(
+        startDate: startDate,
+        endDate: endDate,
+      );
+      
+      // Filtrar transações que pertencem a esta recorrência
+      final orphanedTransactions = allTransactions.where(
+        (transaction) => transaction.recurringTransactionId == recurringTransactionId
+      ).toList();
+      
+      print('=== RECURRING PROVIDER: ${orphanedTransactions.length} transações órfãs encontradas ===');
+      
+      // Remover cada transação órfã
+      for (final transaction in orphanedTransactions) {
+        if (transaction.id != null) {
+          try {
+            await _databaseService.deleteTransaction(transaction.id!);
+            print('Transação órfã removida: ${transaction.category} - ${transaction.date.day}/${transaction.date.month}/${transaction.date.year}');
+          } catch (e) {
+            print('Erro ao remover transação órfã ${transaction.id}: $e');
+          }
+        }
+      }
+      
+      print('=== RECURRING PROVIDER: Remoção de transações órfãs concluída ===');
+      
+    } catch (e) {
+      print('Erro ao remover transações órfãs: $e');
     }
   }
 

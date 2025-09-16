@@ -1349,86 +1349,29 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
       print('Iniciando remoção de transação recorrente: ${transaction.category}');
       print('ID da recorrência: ${transaction.recurringTransactionId}');
 
-      // Remover a transação atual
-      final deleteResult = await transactionProvider.deleteTransaction(transaction.id!);
-      if (!deleteResult) {
-        throw Exception('Erro ao remover transação atual');
-      }
-      print('Transação atual removida com sucesso');
-      
-      // Se é uma transação recorrente, remover a recorrência
+      // Se é uma transação recorrente, remover a recorrência (que automaticamente remove todas as transações órfãs)
       if (transaction.recurringTransactionId != null) {
-        // Recarregar recorrências para garantir que temos os dados mais atualizados
-        await recurringProvider.loadRecurringTransactions();
+        print('Removendo recorrência e todas as transações associadas...');
         
-        // Encontrar a recorrência
-        final recurringTransactions = recurringProvider.recurringTransactions;
-        print('Recorrências disponíveis: ${recurringTransactions.length}');
-        print('IDs das recorrências: ${recurringTransactions.map((rt) => rt.id).toList()}');
-        
-        RecurringTransaction? recurringTransaction;
-        try {
-          recurringTransaction = recurringTransactions.firstWhere(
-            (rt) => rt.id == transaction.recurringTransactionId,
-          );
-        } catch (e) {
-          print('Recorrência não encontrada no provider. Tentando remover apenas as transações futuras...');
-          recurringTransaction = null;
+        final recurringDeleteResult = await recurringProvider.deleteRecurringTransaction(transaction.recurringTransactionId!);
+        if (!recurringDeleteResult) {
+          throw Exception('Erro ao remover recorrência');
         }
-        
-        if (recurringTransaction != null) {
-          print('Recorrência encontrada: ${recurringTransaction.category}');
-          
-          // Remover todas as transações futuras desta recorrência primeiro
-          final allTransactions = transactionProvider.transactions;
-          final futureTransactions = allTransactions.where(
-            (t) => t.recurringTransactionId == transaction.recurringTransactionId &&
-                   t.date.isAfter(transaction.date)
-          ).toList();
-          
-          print('Transações futuras encontradas: ${futureTransactions.length}');
-          
-          for (final futureTransaction in futureTransactions) {
-            print('Removendo transação futura: ${futureTransaction.category} - ${DateFormat('dd/MM/yyyy').format(futureTransaction.date)}');
-            await transactionProvider.deleteTransaction(futureTransaction.id!);
-          }
-          
-          // Remover a recorrência
-          final recurringDeleteResult = await recurringProvider.deleteRecurringTransaction(recurringTransaction.id!);
-          if (!recurringDeleteResult) {
-            throw Exception('Erro ao remover recorrência');
-          }
-          print('Recorrência removida com sucesso');
-        } else {
-          // Se a recorrência não foi encontrada, apenas remover as transações futuras
-          print('Recorrência não encontrada, removendo apenas transações futuras...');
-          
-          final allTransactions = transactionProvider.transactions;
-          final futureTransactions = allTransactions.where(
-            (t) => t.recurringTransactionId == transaction.recurringTransactionId &&
-                   t.date.isAfter(transaction.date)
-          ).toList();
-          
-          print('Transações futuras encontradas: ${futureTransactions.length}');
-          
-          for (final futureTransaction in futureTransactions) {
-            print('Removendo transação futura: ${futureTransaction.category} - ${DateFormat('dd/MM/yyyy').format(futureTransaction.date)}');
-            await transactionProvider.deleteTransaction(futureTransaction.id!);
-          }
-          
-          // Tentar remover a recorrência diretamente do banco se ela existir
-          try {
-            await recurringProvider.deleteRecurringTransaction(transaction.recurringTransactionId!);
-            print('Recorrência removida diretamente do banco');
-          } catch (e) {
-            print('Recorrência já não existe no banco: $e');
-          }
+        print('Recorrência e todas as transações associadas removidas com sucesso');
+      } else {
+        // Se não é recorrente, apenas remover a transação atual
+        final deleteResult = await transactionProvider.deleteTransaction(transaction.id!);
+        if (!deleteResult) {
+          throw Exception('Erro ao remover transação');
         }
+        print('Transação removida com sucesso');
       }
       
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Transação recorrente e todas as futuras foram removidas'),
+          content: Text(transaction.recurringTransactionId != null 
+            ? 'Recorrência e todas as transações associadas foram removidas'
+            : 'Transação removida com sucesso'),
           backgroundColor: Colors.green,
           duration: Duration(seconds: 3),
         ),
