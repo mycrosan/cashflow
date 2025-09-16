@@ -216,3 +216,4 @@ pkill -f "flutter run"
 fvm flutter run -d 11836f8
 fvm flutter run -d chrome 
 fvm flutter run -d 1d7fa151808b45c036fcd5740b7702f120c81135
+ws://127.0.0.1:62426/Ogg5wfgfqBw=/ws
