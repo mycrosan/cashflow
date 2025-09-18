@@ -5,9 +5,9 @@ class InsightsWidget extends StatelessWidget {
   final List<FinancialInsight> insights;
 
   const InsightsWidget({
-    Key? key,
+    super.key,
     required this.insights,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -66,7 +66,7 @@ class InsightsWidget extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            ...insights.map((insight) => _buildInsightCard(context, insight)).toList(),
+            ...insights.map((insight) => _buildInsightCard(context, insight)),
           ],
         ),
       ),

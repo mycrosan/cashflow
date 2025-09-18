@@ -10,6 +10,8 @@ import '../../services/pdf_report_service.dart';
 import 'annual_report_page.dart';
 
 class AdvancedReportsPage extends StatefulWidget {
+  const AdvancedReportsPage({super.key});
+
   @override
   _AdvancedReportsPageState createState() => _AdvancedReportsPageState();
 }
@@ -38,7 +40,7 @@ class _AdvancedReportsPageState extends State<AdvancedReportsPage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Relatórios Avançados'),
+        title: const Text('Relatórios Avançados'),
         backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
         bottom: TabBar(
@@ -46,7 +48,7 @@ class _AdvancedReportsPageState extends State<AdvancedReportsPage>
           indicatorColor: Colors.white,
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white70,
-          tabs: [
+          tabs: const [
             Tab(icon: Icon(Icons.trending_up), text: 'Tendências'),
             Tab(icon: Icon(Icons.pie_chart), text: 'Categorias'),
             Tab(icon: Icon(Icons.analytics), text: 'Indicadores'),
@@ -57,7 +59,7 @@ class _AdvancedReportsPageState extends State<AdvancedReportsPage>
           PopupMenuButton<String>(
             onSelected: _handleMenuAction,
             itemBuilder: (context) => [
-              PopupMenuItem(
+              const PopupMenuItem(
                 value: 'filters',
                 child: Row(
                   children: [
@@ -67,7 +69,7 @@ class _AdvancedReportsPageState extends State<AdvancedReportsPage>
                   ],
                 ),
               ),
-              PopupMenuItem(
+              const PopupMenuItem(
                 value: 'export_pdf',
                 child: Row(
                   children: [
@@ -77,7 +79,7 @@ class _AdvancedReportsPageState extends State<AdvancedReportsPage>
                   ],
                 ),
               ),
-              PopupMenuItem(
+              const PopupMenuItem(
                 value: 'annual_report',
                 child: Row(
                   children: [
@@ -94,7 +96,7 @@ class _AdvancedReportsPageState extends State<AdvancedReportsPage>
       body: Consumer<FinancialAnalysisProvider>(
         builder: (context, provider, child) {
           if (provider.isLoading) {
-            return Center(
+            return const Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -111,17 +113,17 @@ class _AdvancedReportsPageState extends State<AdvancedReportsPage>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.error, size: 64, color: Colors.red),
-                  SizedBox(height: 16),
+                  const Icon(Icons.error, size: 64, color: Colors.red),
+                  const SizedBox(height: 16),
                   Text(
                     'Erro: ${provider.error}',
-                    style: TextStyle(fontSize: 16),
+                    style: const TextStyle(fontSize: 16),
                     textAlign: TextAlign.center,
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () => provider.loadFinancialAnalysis(),
-                    child: Text('Tentar Novamente'),
+                    child: const Text('Tentar Novamente'),
                   ),
                 ],
               ),
@@ -149,9 +151,9 @@ class _AdvancedReportsPageState extends State<AdvancedReportsPage>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildPeriodSelector(provider),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           _buildChartTypeSelector(provider),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           Card(
             elevation: 4,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -167,7 +169,7 @@ class _AdvancedReportsPageState extends State<AdvancedReportsPage>
                       color: Colors.indigo[700],
                     ),
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   TrendsChart(
                     trends: provider.trends,
                     selectedPeriod: provider.selectedPeriod,
@@ -179,7 +181,7 @@ class _AdvancedReportsPageState extends State<AdvancedReportsPage>
               ),
             ),
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           _buildProjectionsCard(provider),
         ],
       ),
@@ -207,7 +209,7 @@ class _AdvancedReportsPageState extends State<AdvancedReportsPage>
                       color: Colors.indigo[700],
                     ),
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   CategoryPieChart(
                     categories: provider.categoryAnalysis,
                     maxItems: 5,
@@ -216,7 +218,7 @@ class _AdvancedReportsPageState extends State<AdvancedReportsPage>
               ),
             ),
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           _buildTopCategoriesCard(provider),
         ],
       ),
@@ -225,7 +227,7 @@ class _AdvancedReportsPageState extends State<AdvancedReportsPage>
 
   Widget _buildIndicatorsTab(FinancialAnalysisProvider provider) {
     if (provider.indicators == null) {
-      return Center(
+      return const Center(
         child: Text('Nenhum indicador disponível'),
       );
     }
@@ -235,7 +237,7 @@ class _AdvancedReportsPageState extends State<AdvancedReportsPage>
       child: Column(
         children: [
           FinancialIndicatorsWidget(indicators: provider.indicators!),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           _buildSummaryCard(provider),
         ],
       ),
@@ -248,7 +250,7 @@ class _AdvancedReportsPageState extends State<AdvancedReportsPage>
       child: Column(
         children: [
           InsightsWidget(insights: provider.insights),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           _buildSavingsPotentialCard(provider),
         ],
       ),
@@ -271,16 +273,16 @@ class _AdvancedReportsPageState extends State<AdvancedReportsPage>
                 color: Colors.indigo[700],
               ),
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             Column(
               children: [
                 DropdownButtonFormField<String>(
                   value: provider.selectedPeriod,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Tipo de Período',
                     border: OutlineInputBorder(),
                   ),
-                  items: [
+                  items: const [
                     DropdownMenuItem(value: 'daily', child: Text('Diário')),
                     DropdownMenuItem(value: 'weekly', child: Text('Semanal')),
                     DropdownMenuItem(value: 'monthly', child: Text('Mensal')),
@@ -292,12 +294,12 @@ class _AdvancedReportsPageState extends State<AdvancedReportsPage>
                     }
                   },
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 Row(
                   children: [
                     Expanded(
                       child: TextFormField(
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: 'Data Inicial',
                           border: OutlineInputBorder(),
                         ),
@@ -318,10 +320,10 @@ class _AdvancedReportsPageState extends State<AdvancedReportsPage>
                         ),
                       ),
                     ),
-                    SizedBox(width: 16),
+                    const SizedBox(width: 16),
                     Expanded(
                       child: TextFormField(
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: 'Data Final',
                           border: OutlineInputBorder(),
                         ),
@@ -368,23 +370,23 @@ class _AdvancedReportsPageState extends State<AdvancedReportsPage>
                 color: Colors.indigo[700],
               ),
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             Wrap(
               spacing: 8,
               runSpacing: 8,
               children: [
                 FilterChip(
-                  label: Text('Receitas'),
+                  label: const Text('Receitas'),
                   selected: true,
                   onSelected: (selected) {},
                 ),
                 FilterChip(
-                  label: Text('Despesas'),
+                  label: const Text('Despesas'),
                   selected: true,
                   onSelected: (selected) {},
                 ),
                 FilterChip(
-                  label: Text('Saldo'),
+                  label: const Text('Saldo'),
                   selected: true,
                   onSelected: (selected) {},
                 ),
@@ -398,7 +400,7 @@ class _AdvancedReportsPageState extends State<AdvancedReportsPage>
 
   Widget _buildProjectionsCard(FinancialAnalysisProvider provider) {
     if (provider.projections.isEmpty) {
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     }
 
     return Card(
@@ -416,7 +418,7 @@ class _AdvancedReportsPageState extends State<AdvancedReportsPage>
                 color: Colors.indigo[700],
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             ProjectionsChart(
               historicalTrends: provider.trends,
               projections: provider.projections,
@@ -445,12 +447,12 @@ class _AdvancedReportsPageState extends State<AdvancedReportsPage>
                 color: Colors.indigo[700],
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             ...topCategories.asMap().entries.map((entry) {
               final index = entry.key;
               final category = entry.value;
               return Container(
-                margin: EdgeInsets.only(bottom: 8),
+                margin: const EdgeInsets.only(bottom: 8),
                 child: Row(
                   children: [
                     Container(
@@ -463,7 +465,7 @@ class _AdvancedReportsPageState extends State<AdvancedReportsPage>
                       child: Center(
                         child: Text(
                           '${index + 1}',
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
@@ -471,14 +473,14 @@ class _AdvancedReportsPageState extends State<AdvancedReportsPage>
                         ),
                       ),
                     ),
-                    SizedBox(width: 12),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             category.category,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
                             ),
@@ -504,7 +506,7 @@ class _AdvancedReportsPageState extends State<AdvancedReportsPage>
                   ],
                 ),
               );
-            }).toList(),
+            }),
           ],
         ),
       ),
@@ -529,7 +531,7 @@ class _AdvancedReportsPageState extends State<AdvancedReportsPage>
                 color: Colors.indigo[700],
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Column(
               children: [
                 Row(
@@ -542,7 +544,7 @@ class _AdvancedReportsPageState extends State<AdvancedReportsPage>
                         Icons.trending_up,
                       ),
                     ),
-                    SizedBox(width: 8),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: _buildSummaryItem(
                         'Despesa Total',
@@ -553,7 +555,7 @@ class _AdvancedReportsPageState extends State<AdvancedReportsPage>
                     ),
                   ],
                 ),
-                SizedBox(height: 12),
+                const SizedBox(height: 12),
                 _buildSummaryItem(
                   'Saldo Total',
                   _formatCurrency(summary['totalBalance']!),
@@ -570,7 +572,7 @@ class _AdvancedReportsPageState extends State<AdvancedReportsPage>
 
   Widget _buildSummaryItem(String title, String value, Color color, IconData icon) {
     return Container(
-      padding: EdgeInsets.all(12),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(8),
@@ -580,7 +582,7 @@ class _AdvancedReportsPageState extends State<AdvancedReportsPage>
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, color: color, size: 20),
-          SizedBox(height: 6),
+          const SizedBox(height: 6),
           Text(
             title,
             style: TextStyle(
@@ -592,7 +594,7 @@ class _AdvancedReportsPageState extends State<AdvancedReportsPage>
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
-          SizedBox(height: 4),
+          const SizedBox(height: 4),
           Text(
             value,
             style: TextStyle(
@@ -627,9 +629,9 @@ class _AdvancedReportsPageState extends State<AdvancedReportsPage>
                 color: Colors.indigo[700],
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Container(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.green[50],
                 borderRadius: BorderRadius.circular(8),
@@ -638,7 +640,7 @@ class _AdvancedReportsPageState extends State<AdvancedReportsPage>
               child: Row(
                 children: [
                   Icon(Icons.savings, color: Colors.green[600], size: 32),
-                  SizedBox(width: 16),
+                  const SizedBox(width: 16),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -650,7 +652,7 @@ class _AdvancedReportsPageState extends State<AdvancedReportsPage>
                             color: Colors.green[800],
                           ),
                         ),
-                        SizedBox(height: 4),
+                        const SizedBox(height: 4),
                         Text(
                           _formatCurrency(potentialSavings),
                           style: TextStyle(
@@ -694,12 +696,12 @@ class _AdvancedReportsPageState extends State<AdvancedReportsPage>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Filtros Avançados'),
-        content: Text('Funcionalidade em desenvolvimento'),
+        title: const Text('Filtros Avançados'),
+        content: const Text('Funcionalidade em desenvolvimento'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Fechar'),
+            child: const Text('Fechar'),
           ),
         ],
       ),
@@ -723,7 +725,7 @@ class _AdvancedReportsPageState extends State<AdvancedReportsPage>
       await _pdfService.printReport(pdfBytes, 'Relatório Financeiro');
       
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Relatório PDF gerado com sucesso!'),
           backgroundColor: Colors.green,
         ),

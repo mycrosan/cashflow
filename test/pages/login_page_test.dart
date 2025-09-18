@@ -3,10 +3,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
-import '../../lib/pages/auth/login_page.dart';
-import '../../lib/providers/auth_provider.dart';
-import '../../lib/widgets/custom_text_field.dart';
-import '../../lib/widgets/custom_button.dart';
+import 'package:fluxo_caixa_familiar/pages/auth/login_page.dart';
+import 'package:fluxo_caixa_familiar/providers/auth_provider.dart';
+import 'package:fluxo_caixa_familiar/widgets/custom_text_field.dart';
+import 'package:fluxo_caixa_familiar/widgets/custom_button.dart';
 
 // Generate mocks
 @GenerateMocks([AuthProvider])

@@ -4,6 +4,8 @@ import '../../providers/category_provider.dart';
 import '../../widgets/custom_button.dart';
 
 class CategoriesPage extends StatefulWidget {
+  const CategoriesPage({super.key});
+
   @override
   _CategoriesPageState createState() => _CategoriesPageState();
 }
@@ -23,12 +25,12 @@ class _CategoriesPageState extends State<CategoriesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text('Categorias'),
+          title: const Text('Categorias'),
           backgroundColor: Theme.of(context).primaryColor,
           foregroundColor: Colors.white,
           actions: [
             IconButton(
-              icon: Icon(Icons.add),
+              icon: const Icon(Icons.add),
               onPressed: () {
                 _showAddCategoryDialog(context);
               },
@@ -39,12 +41,12 @@ class _CategoriesPageState extends State<CategoriesPage> {
           children: [
             // Filtros
             Container(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
                   Expanded(
                     child: SegmentedButton<String>(
-                      segments: [
+                      segments: const [
                         ButtonSegment(
                           value: 'all',
                           label: Text('Todas'),
@@ -74,7 +76,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
               child: Consumer<CategoryProvider>(
                 builder: (context, categoryProvider, child) {
                   if (categoryProvider.isLoading) {
-                    return Center(child: CircularProgressIndicator());
+                    return const Center(child: CircularProgressIndicator());
                   }
 
                   if (categoryProvider.error != null) {
@@ -82,17 +84,17 @@ class _CategoriesPageState extends State<CategoriesPage> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.error, size: 64, color: Colors.red),
-                          SizedBox(height: 16),
+                          const Icon(Icons.error, size: 64, color: Colors.red),
+                          const SizedBox(height: 16),
                           Text(
                             'Erro: ${categoryProvider.error}',
-                            style: TextStyle(fontSize: 16),
+                            style: const TextStyle(fontSize: 16),
                             textAlign: TextAlign.center,
                           ),
-                          SizedBox(height: 16),
+                          const SizedBox(height: 16),
                           ElevatedButton(
                             onPressed: () => categoryProvider.loadCategories(),
-                            child: Text('Tentar Novamente'),
+                            child: const Text('Tentar Novamente'),
                           ),
                         ],
                       ),
@@ -108,19 +110,19 @@ class _CategoriesPageState extends State<CategoriesPage> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.category, size: 64, color: Colors.grey),
-                          SizedBox(height: 16),
+                          const Icon(Icons.category, size: 64, color: Colors.grey),
+                          const SizedBox(height: 16),
                           Text(
                             'Nenhuma categoria encontrada',
                             style: TextStyle(fontSize: 18, color: Colors.grey[600]),
                           ),
-                          SizedBox(height: 8),
+                          const SizedBox(height: 8),
                           Text(
                             'Adicione categorias para organizar suas transações',
                             style: TextStyle(fontSize: 14, color: Colors.grey[500]),
                             textAlign: TextAlign.center,
                           ),
-                          SizedBox(height: 24),
+                          const SizedBox(height: 24),
                           CustomButton(
                             text: 'Adicionar Primeira Categoria',
                             onPressed: () {
@@ -134,12 +136,12 @@ class _CategoriesPageState extends State<CategoriesPage> {
                   }
 
                   return ListView.builder(
-                    padding: EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(16),
                     itemCount: filteredCategories.length,
                     itemBuilder: (context, index) {
                       final category = filteredCategories[index];
                       return Card(
-                        margin: EdgeInsets.only(bottom: 12),
+                        margin: const EdgeInsets.only(bottom: 12),
                         child: ListTile(
                           leading: CircleAvatar(
                             backgroundColor: category.type == 'income' 
@@ -152,7 +154,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
                           ),
                           title: Text(
                             category.name,
-                            style: TextStyle(fontWeight: FontWeight.w500),
+                            style: const TextStyle(fontWeight: FontWeight.w500),
                           ),
                           subtitle: Text(category.type == 'income' ? 'Receita' : 'Despesa'),
                           trailing: PopupMenuButton<String>(
@@ -160,7 +162,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
                               _handleCategoryAction(value, category);
                             },
                             itemBuilder: (context) => [
-                              PopupMenuItem(
+                              const PopupMenuItem(
                                 value: 'edit',
                                 child: Row(
                                   children: [
@@ -170,7 +172,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
                                   ],
                                 ),
                               ),
-                              PopupMenuItem(
+                              const PopupMenuItem(
                                 value: 'delete',
                                 child: Row(
                                   children: [
@@ -203,7 +205,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          title: Text('Adicionar Categoria'),
+          title: const Text('Adicionar Categoria'),
           content: Form(
             key: formKey,
             child: Column(
@@ -211,7 +213,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
               children: [
                 TextFormField(
                   controller: nameController,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Nome da Categoria',
                     border: OutlineInputBorder(),
                   ),
@@ -222,14 +224,14 @@ class _CategoriesPageState extends State<CategoriesPage> {
                     return null;
                   },
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
                   value: selectedType,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Tipo',
                     border: OutlineInputBorder(),
                   ),
-                  items: [
+                  items: const [
                     DropdownMenuItem(
                       value: 'income',
                       child: Text('Receita'),
@@ -251,7 +253,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('Cancelar'),
+              child: const Text('Cancelar'),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -267,14 +269,14 @@ class _CategoriesPageState extends State<CategoriesPage> {
                   if (success) {
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
+                      const SnackBar(
                         content: Text('Categoria adicionada com sucesso!'),
                         backgroundColor: Colors.green,
                       ),
                     );
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
+                      const SnackBar(
                         content: Text('Erro ao adicionar categoria'),
                         backgroundColor: Colors.red,
                       ),
@@ -282,7 +284,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
                   }
                 }
               },
-              child: Text('Adicionar'),
+              child: const Text('Adicionar'),
             ),
           ],
         ),
@@ -310,7 +312,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          title: Text('Editar Categoria'),
+          title: const Text('Editar Categoria'),
           content: Form(
             key: formKey,
             child: Column(
@@ -318,7 +320,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
               children: [
                 TextFormField(
                   controller: nameController,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Nome da Categoria',
                     border: OutlineInputBorder(),
                   ),
@@ -329,14 +331,14 @@ class _CategoriesPageState extends State<CategoriesPage> {
                     return null;
                   },
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
                   value: selectedType,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Tipo',
                     border: OutlineInputBorder(),
                   ),
-                  items: [
+                  items: const [
                     DropdownMenuItem(
                       value: 'income',
                       child: Text('Receita'),
@@ -358,7 +360,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('Cancelar'),
+              child: const Text('Cancelar'),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -374,14 +376,14 @@ class _CategoriesPageState extends State<CategoriesPage> {
                   if (success) {
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
+                      const SnackBar(
                         content: Text('Categoria atualizada com sucesso!'),
                         backgroundColor: Colors.green,
                       ),
                     );
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
+                      const SnackBar(
                         content: Text('Erro ao atualizar categoria'),
                         backgroundColor: Colors.red,
                       ),
@@ -389,7 +391,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
                   }
                 }
               },
-              child: Text('Atualizar'),
+              child: const Text('Atualizar'),
             ),
           ],
         ),
@@ -401,12 +403,12 @@ class _CategoriesPageState extends State<CategoriesPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Excluir Categoria'),
+        title: const Text('Excluir Categoria'),
         content: Text('Tem certeza que deseja excluir "${category.name}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancelar'),
+            child: const Text('Cancelar'),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -416,14 +418,14 @@ class _CategoriesPageState extends State<CategoriesPage> {
               if (success) {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
+                  const SnackBar(
                     content: Text('Categoria excluída com sucesso!'),
                     backgroundColor: Colors.green,
                   ),
                 );
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
+                  const SnackBar(
                     content: Text('Erro ao excluir categoria'),
                     backgroundColor: Colors.red,
                   ),
@@ -434,7 +436,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
             ),
-            child: Text('Excluir'),
+            child: const Text('Excluir'),
           ),
         ],
       ),

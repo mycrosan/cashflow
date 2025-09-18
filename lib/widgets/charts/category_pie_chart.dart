@@ -7,10 +7,10 @@ class CategoryPieChart extends StatefulWidget {
   final int maxItems;
 
   const CategoryPieChart({
-    Key? key,
+    super.key,
     required this.categories,
     this.maxItems = 5,
-  }) : super(key: key);
+  });
 
   @override
   State<CategoryPieChart> createState() => _CategoryPieChartState();
@@ -22,7 +22,7 @@ class _CategoryPieChartState extends State<CategoryPieChart> {
   @override
   Widget build(BuildContext context) {
     if (widget.categories.isEmpty) {
-      return Container(
+      return SizedBox(
         height: 300,
         child: Center(
           child: Text(
@@ -191,7 +191,7 @@ class _CategoryPieChartState extends State<CategoryPieChart> {
               ],
             ),
           );
-        }).toList(),
+        }),
         
         if (othersAmount > 0) ...[
           Container(

@@ -12,13 +12,13 @@ class DraggableFAB extends StatefulWidget {
   final Color foregroundColor;
 
   const DraggableFAB({
-    Key? key,
+    super.key,
     this.onPressed,
     this.icon = Icons.add,
     this.tooltip = 'Adicionar Transação',
     this.backgroundColor = Colors.indigo,
     this.foregroundColor = Colors.white,
-  }) : super(key: key);
+  });
 
   @override
   _DraggableFABState createState() => _DraggableFABState();
@@ -157,7 +157,7 @@ class _DraggableFABState extends State<DraggableFAB> with TickerProviderStateMix
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => AddTransactionPage(
+                              builder: (context) => const AddTransactionPage(
                                 initialTransactionType: TransactionType.income,
                               ),
                             ),
@@ -176,7 +176,7 @@ class _DraggableFABState extends State<DraggableFAB> with TickerProviderStateMix
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => AddTransactionPage(
+                              builder: (context) => const AddTransactionPage(
                                 initialTransactionType: TransactionType.expense,
                               ),
                             ),
@@ -355,14 +355,14 @@ class DraggableFABWrapper extends StatelessWidget {
   final Color fabForegroundColor;
 
   const DraggableFABWrapper({
-    Key? key,
+    super.key,
     required this.child,
     this.onFabPressed,
     this.fabIcon = Icons.add,
     this.fabTooltip = 'Adicionar Transação',
     this.fabBackgroundColor = Colors.indigo,
     this.fabForegroundColor = Colors.white,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

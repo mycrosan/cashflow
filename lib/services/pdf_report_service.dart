@@ -121,7 +121,7 @@ class PDFReportService {
           pw.SizedBox(height: 8),
           pw.Text(
             'Fluxo Família - Sistema de Gestão Financeira',
-            style: pw.TextStyle(
+            style: const pw.TextStyle(
               fontSize: 14,
               color: PdfColors.blue700,
             ),
@@ -129,7 +129,7 @@ class PDFReportService {
           pw.SizedBox(height: 4),
           pw.Text(
             'Gerado em: ${DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now())}',
-            style: pw.TextStyle(
+            style: const pw.TextStyle(
               fontSize: 12,
               color: PdfColors.grey600,
             ),
@@ -290,7 +290,7 @@ class PDFReportService {
                 _buildTableCell('${category.percentage.toStringAsFixed(1)}%'),
                 _buildTableCell(category.transactionCount.toString()),
               ],
-            )).toList(),
+            )),
           ],
         ),
       ],
@@ -336,7 +336,7 @@ class PDFReportService {
               pw.SizedBox(height: 4),
               pw.Text(
                 insight.description,
-                style: pw.TextStyle(fontSize: 12),
+                style: const pw.TextStyle(fontSize: 12),
               ),
               if (insight.recommendation.isNotEmpty) ...[
                 pw.SizedBox(height: 8),
@@ -351,7 +351,7 @@ class PDFReportService {
               ],
             ],
           ),
-        )).toList(),
+        )),
       ],
     );
   }
@@ -451,7 +451,7 @@ class PDFReportService {
                 _buildTableCell(_formatCurrency(trend.expense)),
                 _buildTableCell(_formatCurrency(trend.balance)),
               ],
-            )).toList(),
+            )),
           ],
         ),
       ],
@@ -503,7 +503,7 @@ class PDFReportService {
                 _buildTableCell(_formatCurrency(projection.projectedBalance)),
                 _buildTableCell('${(projection.confidence * 100).toStringAsFixed(0)}%'),
               ],
-            )).toList(),
+            )),
           ],
         ),
       ],
@@ -532,7 +532,7 @@ class PDFReportService {
       ),
       child: pw.Text(
         'Relatório gerado automaticamente pelo Fluxo Família - Sistema de Gestão Financeira',
-        style: pw.TextStyle(
+        style: const pw.TextStyle(
           fontSize: 10,
           color: PdfColors.grey600,
         ),

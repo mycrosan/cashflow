@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import '../../lib/models/user.dart';
+import 'package:fluxo_caixa_familiar/models/user.dart';
 
 void main() {
   group('User Model Tests', () {

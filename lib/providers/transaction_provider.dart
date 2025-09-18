@@ -7,6 +7,7 @@ import '../services/database_service.dart';
 import '../services/api_service.dart';
 import '../providers/recurring_transaction_provider.dart';
 import 'auth_provider.dart';
+import '../fixes/transaction_recurring_fixes.dart';
 
 class TransactionProvider extends ChangeNotifier {
   final DatabaseService _databaseService = DatabaseService();
@@ -26,10 +27,11 @@ class TransactionProvider extends ChangeNotifier {
   
   // Cache e controle de meses
   DateTime? _currentMonth;
-  Map<String, List<Transaction>> _monthCache = {};
+  final Map<String, List<Transaction>> _monthCache = {};
   
   // Getters
-  List<Transaction> get transactions => _transactions;
+  // Retorna apenas transações não excluídas (soft delete)
+  List<Transaction> get transactions => _transactions.where((t) => t.deletedAt == null).toList();
   List<Member> get members => _members;
   List<Category> get categories => _categories;
   bool get isLoading => _isLoading;
@@ -65,8 +67,8 @@ class TransactionProvider extends ChangeNotifier {
     final endOfMonth = DateTime(_selectedMonth.year, _selectedMonth.month + 1, 0);
     
     return _transactions.where((t) {
-      return t.date.isAfter(startOfMonth.subtract(Duration(days: 1))) &&
-             t.date.isBefore(endOfMonth.add(Duration(days: 1)));
+      return t.date.isAfter(startOfMonth.subtract(const Duration(days: 1))) &&
+             t.date.isBefore(endOfMonth.add(const Duration(days: 1)));
     }).toList();
   }
   
@@ -234,14 +236,27 @@ class TransactionProvider extends ChangeNotifier {
       _selectedMonth = month;
       _currentMonth = month; // Definir o mês atual para cache
       
-      // Limpar cache para garantir dados frescos
-      clearMonthCache();
+      // Verificar se já temos dados em cache para este mês
+      final monthKey = _getMonthKey(month);
+      final hasCache = _monthCache.containsKey(monthKey);
+      
+      print('=== TRANSACTION PROVIDER: Cache para ${monthKey}: ${hasCache ? 'EXISTE' : 'NÃO EXISTE'} ===');
+      
+      // Só limpar cache se não temos dados para este mês específico
+      if (!hasCache) {
+        print('=== TRANSACTION PROVIDER: Limpando cache para carregar dados frescos ===');
+        clearMonthCache();
+      }
       
       // Carregar transações existentes do mês
       await loadMonthlyTransactions();
       
-      // Gerar transações recorrentes únicas para o mês
-      await _generateUniqueRecurringTransactions(month);
+      // Gerar transações recorrentes únicas para o mês (só se não temos cache)
+      if (!hasCache) {
+        await _generateUniqueRecurringTransactions(month);
+      } else {
+        print('=== TRANSACTION PROVIDER: Usando dados do cache, pulando geração de recorrências ===');
+      }
       
       print('=== TRANSACTION PROVIDER: Transações com recorrências carregadas com sucesso ===');
       
@@ -307,17 +322,10 @@ class TransactionProvider extends ChangeNotifier {
     required DateTime date,
   }) async {
     try {
-      final startOfDay = DateTime(date.year, date.month, date.day);
-      final endOfDay = DateTime(date.year, date.month, date.day, 23, 59, 59);
-      
-      final existingTransactions = await _databaseService.getTransactions(
-        startDate: startOfDay,
-        endDate: endOfDay,
-        userId: _currentUserId,
-      );
-      
-      return existingTransactions.any((transaction) => 
-        transaction.recurringTransactionId == recurringTransactionId
+      // Usar método que verifica incluindo transações excluídas (soft delete)
+      return await _databaseService.checkRecurringTransactionExistsIncludingDeleted(
+        recurringTransactionId: recurringTransactionId,
+        date: date,
       );
     } catch (e) {
       print('Erro ao verificar existência de transação recorrente: $e');
@@ -432,8 +440,12 @@ class TransactionProvider extends ChangeNotifier {
     final endOfMonth = DateTime(month.year, month.month + 1, 0);
     
     return _transactions.where((t) {
-      return t.date.isAfter(startOfMonth.subtract(Duration(days: 1))) &&
-             t.date.isBefore(endOfMonth.add(Duration(days: 1)));
+      // Filtrar transações excluídas (soft delete)
+      final isNotDeleted = t.deletedAt == null;
+      final isInMonth = t.date.isAfter(startOfMonth.subtract(const Duration(days: 1))) &&
+                       t.date.isBefore(endOfMonth.add(const Duration(days: 1)));
+      
+      return isNotDeleted && isInMonth;
     }).toList();
   }
 
@@ -537,26 +549,116 @@ class TransactionProvider extends ChangeNotifier {
     }
   }
 
-  // Deletar transação
+  // Soft delete de transação
   Future<bool> deleteTransaction(int id) async {
     _setLoading(true);
     _clearError();
     
     try {
-      await _databaseService.deleteTransaction(id);
+      // Buscar a transação atual
+      final transactionIndex = _transactions.indexWhere((t) => t.id == id);
+      if (transactionIndex == -1) {
+        _setError('Transação não encontrada');
+        return false;
+      }
       
-      _transactions.removeWhere((t) => t.id == id);
+      final transaction = _transactions[transactionIndex];
+      
+      // Criar uma cópia com deletedAt preenchido
+      final deletedTransaction = transaction.copyWith(
+        deletedAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+      
+      // Debug: Verificar se o campo está sendo preenchido
+      print('🗑️ DEBUG EXCLUSÃO - ID: ${deletedTransaction.id}');
+      print('🗑️ DEBUG EXCLUSÃO - deletedAt: ${deletedTransaction.deletedAt}');
+      print('🗑️ DEBUG EXCLUSÃO - JSON: ${deletedTransaction.toJson()}');
+      
+      // Atualizar no banco de dados
+      final updateResult = await _databaseService.updateTransaction(deletedTransaction);
+      print('🗑️ DEBUG EXCLUSÃO - Linhas afetadas: $updateResult');
+      
+      // Remover da lista local (para não aparecer na interface)
+      _transactions.removeAt(transactionIndex);
+      
+      // Limpar cache do mês da transação para garantir dados atualizados
+      clearMonthCacheFor(transaction.date);
+      print('🗑️ DEBUG EXCLUSÃO - Cache limpo para o mês ${transaction.date.month}/${transaction.date.year}');
       
       // Log para sincronização
-      await _databaseService.logSyncAction('lancamentos', id, 'delete');
+      await _databaseService.logSyncAction('lancamentos', id, 'update');
       
       notifyListeners();
       return true;
     } catch (e) {
-      _setError('Erro ao deletar transação: $e');
+      _setError('Erro ao excluir transação: $e');
       return false;
     } finally {
       _setLoading(false);
+    }
+  }
+
+  // Restaurar transação excluída
+  Future<bool> restoreTransaction(int id) async {
+    _setLoading(true);
+    _clearError();
+    
+    try {
+      // Buscar transações excluídas do usuário
+      final deletedTransactions = await _databaseService.getDeletedTransactions(userId: _currentUserId);
+      final deletedTransaction = deletedTransactions.firstWhere(
+        (t) => t.id == id,
+        orElse: () => throw Exception('Transação excluída não encontrada'),
+      );
+      
+      // Criar uma cópia sem deletedAt
+      final restoredTransaction = deletedTransaction.copyWith(
+        deletedAt: null,
+        updatedAt: DateTime.now(),
+      );
+      
+      // Atualizar no banco de dados
+      await _databaseService.updateTransaction(restoredTransaction);
+      
+      // Adicionar de volta à lista local se estiver no mês atual
+      if (_isInSelectedMonth(restoredTransaction.date)) {
+        _transactions.add(restoredTransaction);
+        _sortTransactions();
+      }
+      
+      // Log para sincronização
+      await _databaseService.logSyncAction('lancamentos', id, 'update');
+      
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _setError('Erro ao restaurar transação: $e');
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  // Verificar se a data está no mês selecionado
+  bool _isInSelectedMonth(DateTime date) {
+    return date.year == _selectedMonth.year && date.month == _selectedMonth.month;
+  }
+
+  // Listar transações excluídas
+  Future<List<Transaction>> getDeletedTransactions({
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
+    try {
+      return await _databaseService.getDeletedTransactions(
+        startDate: startDate,
+        endDate: endDate,
+        userId: _currentUserId,
+      );
+    } catch (e) {
+      _setError('Erro ao buscar transações excluídas: $e');
+      return [];
     }
   }
 
@@ -720,10 +822,10 @@ class TransactionProvider extends ChangeNotifier {
       await loadMembers();
       await loadCategories();
       
-      // Remover transações órfãs antes de recarregar
+      // Remover transações órfãs ANTES da geração (para evitar conflitos)
       await removeOrphanedRecurringTransactions();
       
-      // Recarregar transações do mês atual com recorrências
+      // Recarregar transações do mês atual com recorrências DEPOIS
       await loadTransactionsForMonthWithRecurring(_selectedMonth);
       
       print('=== TRANSACTION PROVIDER: Refresh completo concluído ===');
@@ -743,10 +845,10 @@ class TransactionProvider extends ChangeNotifier {
       await loadMembers();
       await loadCategories();
       
-      // Remover transações órfãs
+      // Remover transações órfãs ANTES da geração (para evitar conflitos)
       await removeOrphanedRecurringTransactions();
       
-      // Carregar transações do mês atual com recorrências
+      // Carregar transações do mês atual com recorrências DEPOIS
       await loadTransactionsForMonthWithRecurring(_selectedMonth);
       
       print('=== TRANSACTION PROVIDER: Inicialização concluída ===');
@@ -767,6 +869,45 @@ class TransactionProvider extends ChangeNotifier {
   void clearMonthCache() {
     _monthCache.clear();
     print('=== TRANSACTION PROVIDER: Cache de meses limpo ===');
+  }
+
+  // Limpar cache de um mês específico
+  void clearMonthCacheFor(DateTime month) {
+    final monthKey = _getMonthKey(month);
+    if (_monthCache.containsKey(monthKey)) {
+      _monthCache.remove(monthKey);
+      print('=== TRANSACTION PROVIDER: Cache do mês ${monthKey} removido ===');
+    }
+  }
+
+  // === MÉTODOS DE CORREÇÃO ===
+
+  /// Executar correções na lógica de transações e recorrências
+  Future<Map<String, dynamic>> runTransactionRecurringFixes({DateTime? specificMonth}) async {
+    try {
+      print('=== TRANSACTION PROVIDER: Executando correções de sincronização ===');
+      
+      final results = await TransactionRecurringFixes.runAllFixes(
+        specificMonth: specificMonth ?? _selectedMonth,
+        clearTransactionCache: clearMonthCacheFor,
+        clearRecurringCache: () => clearMonthCache(),
+      );
+      
+      // Recarregar dados após correções
+      if (results['success'] == true) {
+        await loadMonthlyTransactions();
+        print('=== TRANSACTION PROVIDER: Dados recarregados após correções ===');
+      }
+      
+      return results;
+      
+    } catch (e) {
+      print('=== TRANSACTION PROVIDER: Erro ao executar correções: $e ===');
+      return {
+        'success': false,
+        'error': e.toString(),
+      };
+    }
   }
 
   // === MÉTODOS DE PAGAMENTO ===

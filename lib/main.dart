@@ -15,6 +15,7 @@ import 'providers/notification_provider.dart';
 import 'providers/sync_provider.dart';
 import 'providers/floating_button_provider.dart';
 import 'providers/financial_analysis_provider.dart';
+import 'providers/receipt_provider.dart';
 import 'services/database_service.dart';
 import 'pages/home/home_page.dart';
 import 'pages/auth/login_page.dart';
@@ -37,6 +38,8 @@ void main() async {
 }
 
 class FluxoFamiliaApp extends StatelessWidget {
+  const FluxoFamiliaApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -53,6 +56,7 @@ class FluxoFamiliaApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => SyncProvider.instance),
         ChangeNotifierProvider(create: (_) => FloatingButtonProvider()),
         ChangeNotifierProvider(create: (_) => FinancialAnalysisProvider()),
+        ChangeNotifierProvider(create: (_) => ReceiptProvider()),
       ],
       child: Consumer<AuthProvider>(
         builder: (context, authProvider, child) {
@@ -61,7 +65,7 @@ class FluxoFamiliaApp extends StatelessWidget {
             theme: ThemeData(
               primarySwatch: Colors.indigo,
               useMaterial3: true,
-              appBarTheme: AppBarTheme(
+              appBarTheme: const AppBarTheme(
                 backgroundColor: Colors.indigo,
                 foregroundColor: Colors.white,
                 elevation: 2,
@@ -70,7 +74,7 @@ class FluxoFamiliaApp extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.indigo,
                   foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -78,12 +82,12 @@ class FluxoFamiliaApp extends StatelessWidget {
               ),
               cardTheme: CardTheme(
                 elevation: 2,
-                margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              floatingActionButtonTheme: FloatingActionButtonThemeData(
+              floatingActionButtonTheme: const FloatingActionButtonThemeData(
                 backgroundColor: Colors.indigo,
                 foregroundColor: Colors.white,
               ),
@@ -91,18 +95,18 @@ class FluxoFamiliaApp extends StatelessWidget {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
-                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
             ),
 
             // Localização
-            localizationsDelegates: [
+            localizationsDelegates: const [
               GlobalMaterialLocalizations.delegate,
               GlobalWidgetsLocalizations.delegate,
               GlobalCupertinoLocalizations.delegate,
             ],
-            supportedLocales: [
-              const Locale('pt', 'BR'),
+            supportedLocales: const [
+              Locale('pt', 'BR'),
             ],
 
             home: authProvider.isAuthenticated ? HomePage() : LoginPage(),

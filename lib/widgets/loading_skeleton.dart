@@ -7,11 +7,11 @@ class LoadingSkeleton extends StatelessWidget {
   final double borderRadius;
 
   const LoadingSkeleton({
-    Key? key,
+    super.key,
     this.width = double.infinity,
     this.height = 20,
     this.borderRadius = 4,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +31,7 @@ class LoadingSkeleton extends StatelessWidget {
 }
 
 class TransactionSkeleton extends StatelessWidget {
-  const TransactionSkeleton({Key? key}) : super(key: key);
+  const TransactionSkeleton({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -56,18 +56,18 @@ class TransactionSkeleton extends StatelessWidget {
             ),
             const SizedBox(width: 16),
             // Conteúdo skeleton
-            Expanded(
+            const Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   LoadingSkeleton(width: 120, height: 16),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   LoadingSkeleton(width: 80, height: 14),
                 ],
               ),
             ),
             // Valor skeleton
-            LoadingSkeleton(width: 80, height: 18),
+            const LoadingSkeleton(width: 80, height: 18),
           ],
         ),
       ),
@@ -76,7 +76,7 @@ class TransactionSkeleton extends StatelessWidget {
 }
 
 class FinancialSummarySkeleton extends StatelessWidget {
-  const FinancialSummarySkeleton({Key? key}) : super(key: key);
+  const FinancialSummarySkeleton({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +88,7 @@ class FinancialSummarySkeleton extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Título skeleton
-            LoadingSkeleton(width: 150, height: 20),
+            const LoadingSkeleton(width: 150, height: 20),
             const SizedBox(height: 24),
             // Cards de receitas e despesas
             Row(
@@ -105,7 +105,7 @@ class FinancialSummarySkeleton extends StatelessWidget {
             const SizedBox(height: 16),
             const Divider(),
             // Saldo skeleton
-            Row(
+            const Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 LoadingSkeleton(width: 60, height: 16),
@@ -136,17 +136,17 @@ class FinancialSummarySkeleton extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         // Label skeleton
-        LoadingSkeleton(width: 60, height: 14),
+        const LoadingSkeleton(width: 60, height: 14),
         const SizedBox(height: 4),
         // Valor skeleton
-        LoadingSkeleton(width: 80, height: 18),
+        const LoadingSkeleton(width: 80, height: 18),
       ],
     );
   }
 }
 
 class MonthHeaderSkeleton extends StatelessWidget {
-  const MonthHeaderSkeleton({Key? key}) : super(key: key);
+  const MonthHeaderSkeleton({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -169,7 +169,7 @@ class MonthHeaderSkeleton extends StatelessWidget {
             ),
           ),
           // Mês skeleton
-          LoadingSkeleton(width: 120, height: 24),
+          const LoadingSkeleton(width: 120, height: 24),
           // Botão próximo skeleton
           Shimmer.fromColors(
             baseColor: Colors.grey[300]!,
@@ -193,9 +193,9 @@ class TransactionsListSkeleton extends StatelessWidget {
   final int itemCount;
 
   const TransactionsListSkeleton({
-    Key? key,
+    super.key,
     this.itemCount = 5,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -211,7 +211,7 @@ class TransactionsListSkeleton extends StatelessWidget {
 }
 
 class HomePageSkeleton extends StatelessWidget {
-  const HomePageSkeleton({Key? key}) : super(key: key);
+  const HomePageSkeleton({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -232,7 +232,7 @@ class HomePageSkeleton extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  LoadingSkeleton(width: 120, height: 18),
+                  const LoadingSkeleton(width: 120, height: 18),
                   const SizedBox(height: 16),
                   Row(
                     children: [
@@ -269,7 +269,7 @@ class HomePageSkeleton extends StatelessWidget {
 }
 
 class MonthlyTransactionsSkeleton extends StatelessWidget {
-  const MonthlyTransactionsSkeleton({Key? key}) : super(key: key);
+  const MonthlyTransactionsSkeleton({super.key});
 
   @override
   Widget build(BuildContext context) {

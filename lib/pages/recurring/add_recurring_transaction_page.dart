@@ -17,9 +17,9 @@ class AddRecurringTransactionPage extends StatefulWidget {
   final RecurringTransaction? recurringTransactionToEdit;
   
   const AddRecurringTransactionPage({
-    Key? key, 
+    super.key, 
     this.recurringTransactionToEdit,
-  }) : super(key: key);
+  });
   
   @override
   _AddRecurringTransactionPageState createState() => _AddRecurringTransactionPageState();
@@ -104,21 +104,21 @@ class _AddRecurringTransactionPageState extends State<AddRecurringTransactionPag
       body: Form(
         key: _formKey,
         child: SingleChildScrollView(
-          padding: EdgeInsets.all(16),
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Tipo de transação
               _buildTransactionTypeSelector(),
-              SizedBox(height: 24),
+              const SizedBox(height: 24),
               
               // Valor
               CustomTextField(
                 controller: _valueController,
                 labelText: 'Valor',
                 hintText: '0,00',
-                keyboardType: TextInputType.numberWithOptions(decimal: true),
-                prefixIcon: Icon(Icons.attach_money),
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                prefixIcon: const Icon(Icons.attach_money),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Valor é obrigatório';
@@ -129,31 +129,31 @@ class _AddRecurringTransactionPageState extends State<AddRecurringTransactionPag
                   return null;
                 },
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               
               // Categoria
               _buildCategorySelector(),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               
               // Membro responsável
               _buildMemberSelector(),
-              SizedBox(height: 24),
+              const SizedBox(height: 24),
               
               // Frequência
               _buildFrequencySelector(),
-              SizedBox(height: 24),
+              const SizedBox(height: 24),
               
               // Data de início
               _buildDateSelector(),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               
               // Data de fim (opcional)
               _buildEndDateSelector(),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               
               // Número máximo de ocorrências
               _buildMaxOccurrencesSelector(),
-              SizedBox(height: 24),
+              const SizedBox(height: 24),
               
               // Observações
               CustomTextField(
@@ -162,12 +162,12 @@ class _AddRecurringTransactionPageState extends State<AddRecurringTransactionPag
                 hintText: 'Adicione observações...',
                 maxLines: 3,
               ),
-              SizedBox(height: 24),
+              const SizedBox(height: 24),
               
               // Status ativo
               SwitchListTile(
-                title: Text('Transação ativa'),
-                subtitle: Text('Gerar transações automaticamente'),
+                title: const Text('Transação ativa'),
+                subtitle: const Text('Gerar transações automaticamente'),
                 value: _isActive == 1,
                 onChanged: (value) {
                   setState(() {
@@ -175,7 +175,7 @@ class _AddRecurringTransactionPageState extends State<AddRecurringTransactionPag
                   });
                 },
               ),
-              SizedBox(height: 32),
+              const SizedBox(height: 32),
               
               // Botão de salvar
               CustomButton(
@@ -196,18 +196,18 @@ class _AddRecurringTransactionPageState extends State<AddRecurringTransactionPag
   Widget _buildTransactionTypeSelector() {
     return Card(
       child: Padding(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Tipo de Transação',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Row(
               children: [
                 Expanded(
@@ -219,7 +219,7 @@ class _AddRecurringTransactionPageState extends State<AddRecurringTransactionPag
                     _getTransactionValue() > 0,
                   ),
                 ),
-                SizedBox(width: 16),
+                const SizedBox(width: 16),
                 Expanded(
                   child: _buildTypeOption(
                     'Despesa',
@@ -241,7 +241,7 @@ class _AddRecurringTransactionPageState extends State<AddRecurringTransactionPag
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isSelected ? color.withOpacity(0.1) : Colors.grey.withOpacity(0.1),
           borderRadius: BorderRadius.circular(8),
@@ -253,7 +253,7 @@ class _AddRecurringTransactionPageState extends State<AddRecurringTransactionPag
         child: Column(
           children: [
             Icon(icon, color: isSelected ? color : Colors.grey, size: 32),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
               label,
               style: TextStyle(
@@ -289,12 +289,12 @@ class _AddRecurringTransactionPageState extends State<AddRecurringTransactionPag
     return Consumer<CategoryProvider>(
       builder: (context, provider, child) {
         if (provider.isLoading) {
-          return CircularProgressIndicator();
+          return const CircularProgressIndicator();
         }
 
         final categories = provider.categories;
         if (categories.isEmpty) {
-          return Text('Nenhuma categoria disponível');
+          return const Text('Nenhuma categoria disponível');
         }
 
         return DropdownButtonFormField<String>(
@@ -304,7 +304,7 @@ class _AddRecurringTransactionPageState extends State<AddRecurringTransactionPag
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
             ),
-            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           ),
           items: categories.map((category) {
             return DropdownMenuItem<String>(
@@ -312,7 +312,7 @@ class _AddRecurringTransactionPageState extends State<AddRecurringTransactionPag
               child: Row(
                 children: [
                   Text(category.icon ?? '📁'),
-                  SizedBox(width: 8),
+                  const SizedBox(width: 8),
                   Text(category.name),
                 ],
               ),
@@ -338,12 +338,12 @@ class _AddRecurringTransactionPageState extends State<AddRecurringTransactionPag
     return Consumer<MemberProvider>(
       builder: (context, provider, child) {
         if (provider.isLoading) {
-          return CircularProgressIndicator();
+          return const CircularProgressIndicator();
         }
 
         final members = provider.members;
         if (members.isEmpty) {
-          return Text('Nenhum membro disponível');
+          return const Text('Nenhum membro disponível');
         }
 
         return DropdownButtonFormField<int>(
@@ -353,7 +353,7 @@ class _AddRecurringTransactionPageState extends State<AddRecurringTransactionPag
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
             ),
-            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           ),
           items: members.map((member) {
             return DropdownMenuItem<int>(
@@ -380,18 +380,18 @@ class _AddRecurringTransactionPageState extends State<AddRecurringTransactionPag
   Widget _buildFrequencySelector() {
     return Card(
       child: Padding(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Frequência',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Wrap(
               spacing: 8,
               children: [
@@ -414,7 +414,7 @@ class _AddRecurringTransactionPageState extends State<AddRecurringTransactionPag
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: 16),
-          SizedBox(width: 4),
+          const SizedBox(width: 4),
           Text(label),
         ],
       ),
@@ -432,25 +432,25 @@ class _AddRecurringTransactionPageState extends State<AddRecurringTransactionPag
   Widget _buildDateSelector() {
     return Card(
       child: Padding(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Data de Início',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             ListTile(
-              leading: Icon(Icons.calendar_today),
+              leading: const Icon(Icons.calendar_today),
               title: Text(
                 DateFormat('dd/MM/yyyy').format(_startDate),
-                style: TextStyle(fontSize: 16),
+                style: const TextStyle(fontSize: 16),
               ),
-              trailing: Icon(Icons.edit),
+              trailing: const Icon(Icons.edit),
               onTap: () => _selectStartDate(context),
             ),
           ],
@@ -462,39 +462,39 @@ class _AddRecurringTransactionPageState extends State<AddRecurringTransactionPag
   Widget _buildEndDateSelector() {
     return Card(
       child: Padding(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Data de Fim (Opcional)',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             ListTile(
-              leading: Icon(Icons.calendar_today),
+              leading: const Icon(Icons.calendar_today),
               title: Text(
                 _endDate != null 
                   ? DateFormat('dd/MM/yyyy').format(_endDate!)
                   : 'Sem data de fim',
-                style: TextStyle(fontSize: 16),
+                style: const TextStyle(fontSize: 16),
               ),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (_endDate != null)
                     IconButton(
-                      icon: Icon(Icons.clear),
+                      icon: const Icon(Icons.clear),
                       onPressed: () {
                         setState(() {
                           _endDate = null;
                         });
                       },
                     ),
-                  Icon(Icons.edit),
+                  const Icon(Icons.edit),
                 ],
               ),
               onTap: () => _selectEndDate(context),
@@ -508,18 +508,18 @@ class _AddRecurringTransactionPageState extends State<AddRecurringTransactionPag
   Widget _buildMaxOccurrencesSelector() {
     return Card(
       child: Padding(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Número Máximo de Ocorrências (Opcional)',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Row(
               children: [
                 Expanded(
@@ -534,8 +534,8 @@ class _AddRecurringTransactionPageState extends State<AddRecurringTransactionPag
                     },
                   ),
                 ),
-                SizedBox(width: 16),
-                Text(
+                const SizedBox(width: 16),
+                const Text(
                   'Deixe em branco para ilimitado',
                   style: TextStyle(
                     fontSize: 12,
@@ -655,7 +655,7 @@ class _AddRecurringTransactionPageState extends State<AddRecurringTransactionPag
           SnackBar(
             content: Text('Transação recorrente $action com sucesso! ($tipoValor)'),
             backgroundColor: Colors.green,
-            duration: Duration(seconds: 3),
+            duration: const Duration(seconds: 3),
             action: SnackBarAction(
               label: 'Ver',
               textColor: Colors.white,
@@ -670,7 +670,7 @@ class _AddRecurringTransactionPageState extends State<AddRecurringTransactionPag
         await _updateHomeData();
         
         // Aguardar um pouco antes de fechar
-        await Future.delayed(Duration(milliseconds: 500));
+        await Future.delayed(const Duration(milliseconds: 500));
         
         if (mounted) {
           Navigator.pop(context, true);

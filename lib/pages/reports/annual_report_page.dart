@@ -9,6 +9,8 @@ import '../../services/pdf_report_service.dart';
 import '../../models/financial_analysis.dart';
 
 class AnnualReportPage extends StatefulWidget {
+  const AnnualReportPage({super.key});
+
   @override
   _AnnualReportPageState createState() => _AnnualReportPageState();
 }
@@ -46,7 +48,7 @@ class _AnnualReportPageState extends State<AnnualReportPage>
           indicatorColor: Colors.white,
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white70,
-          tabs: [
+          tabs: const [
             Tab(icon: Icon(Icons.summarize), text: 'Resumo'),
             Tab(icon: Icon(Icons.trending_up), text: 'Tendências'),
             Tab(icon: Icon(Icons.pie_chart), text: 'Categorias'),
@@ -75,7 +77,7 @@ class _AnnualReportPageState extends State<AnnualReportPage>
           PopupMenuButton<String>(
             onSelected: _handleMenuAction,
             itemBuilder: (context) => [
-              PopupMenuItem(
+              const PopupMenuItem(
                 value: 'export_pdf',
                 child: Row(
                   children: [
@@ -85,7 +87,7 @@ class _AnnualReportPageState extends State<AnnualReportPage>
                   ],
                 ),
               ),
-              PopupMenuItem(
+              const PopupMenuItem(
                 value: 'print',
                 child: Row(
                   children: [
@@ -102,7 +104,7 @@ class _AnnualReportPageState extends State<AnnualReportPage>
       body: Consumer<FinancialAnalysisProvider>(
         builder: (context, provider, child) {
           if (provider.isGeneratingReport) {
-            return Center(
+            return const Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -119,17 +121,17 @@ class _AnnualReportPageState extends State<AnnualReportPage>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.error, size: 64, color: Colors.red),
-                  SizedBox(height: 16),
+                  const Icon(Icons.error, size: 64, color: Colors.red),
+                  const SizedBox(height: 16),
                   Text(
                     'Erro: ${provider.error}',
-                    style: TextStyle(fontSize: 16),
+                    style: const TextStyle(fontSize: 16),
                     textAlign: TextAlign.center,
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: _generateAnnualReport,
-                    child: Text('Tentar Novamente'),
+                    child: const Text('Tentar Novamente'),
                   ),
                 ],
               ),
@@ -137,7 +139,7 @@ class _AnnualReportPageState extends State<AnnualReportPage>
           }
 
           if (provider.annualReport == null) {
-            return Center(
+            return const Center(
               child: Text('Nenhum relatório anual disponível'),
             );
           }
@@ -164,9 +166,9 @@ class _AnnualReportPageState extends State<AnnualReportPage>
       child: Column(
         children: [
           _buildAnnualSummaryCard(report),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           _buildKeyMetricsCard(report),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           _buildYearComparisonCard(),
         ],
       ),
@@ -193,7 +195,7 @@ class _AnnualReportPageState extends State<AnnualReportPage>
                       color: Colors.indigo[700],
                     ),
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   TrendsChart(
                     trends: report.monthlyTrends,
                     selectedPeriod: 'monthly',
@@ -205,7 +207,7 @@ class _AnnualReportPageState extends State<AnnualReportPage>
               ),
             ),
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           _buildMonthlyDetailsCard(report),
         ],
       ),
@@ -232,7 +234,7 @@ class _AnnualReportPageState extends State<AnnualReportPage>
                       color: Colors.indigo[700],
                     ),
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   CategoryPieChart(
                     categories: report.topCategories,
                     maxItems: 8,
@@ -241,7 +243,7 @@ class _AnnualReportPageState extends State<AnnualReportPage>
               ),
             ),
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           _buildCategoryDetailsCard(report),
         ],
       ),
@@ -254,9 +256,9 @@ class _AnnualReportPageState extends State<AnnualReportPage>
       child: Column(
         children: [
           FinancialIndicatorsWidget(indicators: report.indicators),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           InsightsWidget(insights: report.insights),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           _buildProjectionsCard(report),
         ],
       ),
@@ -278,7 +280,7 @@ class _AnnualReportPageState extends State<AnnualReportPage>
                 color: Colors.indigo[700],
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Row(
               children: [
                 Expanded(
@@ -289,7 +291,7 @@ class _AnnualReportPageState extends State<AnnualReportPage>
                     Icons.trending_up,
                   ),
                 ),
-                SizedBox(width: 16),
+                const SizedBox(width: 16),
                 Expanded(
                   child: _buildSummaryItem(
                     'Despesa Anual',
@@ -300,7 +302,7 @@ class _AnnualReportPageState extends State<AnnualReportPage>
                 ),
               ],
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Row(
               children: [
                 Expanded(
@@ -311,7 +313,7 @@ class _AnnualReportPageState extends State<AnnualReportPage>
                     Icons.savings,
                   ),
                 ),
-                SizedBox(width: 16),
+                const SizedBox(width: 16),
                 Expanded(
                   child: _buildSummaryItem(
                     'Taxa de Poupança',
@@ -344,10 +346,10 @@ class _AnnualReportPageState extends State<AnnualReportPage>
                 color: Colors.indigo[700],
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             GridView.count(
               shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
+              physics: const NeverScrollableScrollPhysics(),
               crossAxisCount: 2,
               childAspectRatio: 2.5,
               crossAxisSpacing: 12,
@@ -407,7 +409,7 @@ class _AnnualReportPageState extends State<AnnualReportPage>
                 color: Colors.indigo[700],
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Center(
               child: Text(
                 'Funcionalidade em desenvolvimento',
@@ -439,10 +441,10 @@ class _AnnualReportPageState extends State<AnnualReportPage>
                 color: Colors.indigo[700],
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             ...report.monthlyTrends.map((trend) => Container(
-              margin: EdgeInsets.only(bottom: 8),
-              padding: EdgeInsets.all(12),
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: Colors.grey[50],
                 borderRadius: BorderRadius.circular(8),
@@ -453,19 +455,19 @@ class _AnnualReportPageState extends State<AnnualReportPage>
                   Expanded(
                     child: Text(
                       '${_getMonthName(trend.date.month)} ${trend.date.year}',
-                      style: TextStyle(fontWeight: FontWeight.w500),
+                      style: const TextStyle(fontWeight: FontWeight.w500),
                     ),
                   ),
                   Text(
                     _formatCurrency(trend.income),
-                    style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+                    style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(width: 16),
+                  const SizedBox(width: 16),
                   Text(
                     _formatCurrency(trend.expense),
-                    style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                    style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(width: 16),
+                  const SizedBox(width: 16),
                   Text(
                     _formatCurrency(trend.balance),
                     style: TextStyle(
@@ -475,7 +477,7 @@ class _AnnualReportPageState extends State<AnnualReportPage>
                   ),
                 ],
               ),
-            )).toList(),
+            )),
           ],
         ),
       ),
@@ -498,12 +500,12 @@ class _AnnualReportPageState extends State<AnnualReportPage>
                 color: Colors.indigo[700],
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             ...report.topCategories.asMap().entries.map((entry) {
               final index = entry.key;
               final category = entry.value;
               return Container(
-                margin: EdgeInsets.only(bottom: 8),
+                margin: const EdgeInsets.only(bottom: 8),
                 child: Row(
                   children: [
                     Container(
@@ -516,7 +518,7 @@ class _AnnualReportPageState extends State<AnnualReportPage>
                       child: Center(
                         child: Text(
                           '${index + 1}',
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
@@ -524,14 +526,14 @@ class _AnnualReportPageState extends State<AnnualReportPage>
                         ),
                       ),
                     ),
-                    SizedBox(width: 12),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             category.category,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
                             ),
@@ -557,7 +559,7 @@ class _AnnualReportPageState extends State<AnnualReportPage>
                   ],
                 ),
               );
-            }).toList(),
+            }),
           ],
         ),
       ),
@@ -566,7 +568,7 @@ class _AnnualReportPageState extends State<AnnualReportPage>
 
   Widget _buildProjectionsCard(AnnualReport report) {
     if (report.projections.isEmpty) {
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     }
 
     return Card(
@@ -584,10 +586,10 @@ class _AnnualReportPageState extends State<AnnualReportPage>
                 color: Colors.indigo[700],
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             ...report.projections.take(6).map((projection) => Container(
-              margin: EdgeInsets.only(bottom: 8),
-              padding: EdgeInsets.all(12),
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: Colors.orange[50],
                 borderRadius: BorderRadius.circular(8),
@@ -598,7 +600,7 @@ class _AnnualReportPageState extends State<AnnualReportPage>
                   Expanded(
                     child: Text(
                       '${_getMonthName(projection.date.month)} ${projection.date.year}',
-                      style: TextStyle(fontWeight: FontWeight.w500),
+                      style: const TextStyle(fontWeight: FontWeight.w500),
                     ),
                   ),
                   Text(
@@ -608,16 +610,16 @@ class _AnnualReportPageState extends State<AnnualReportPage>
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(width: 16),
+                  const SizedBox(width: 16),
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.orange,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
                       '${(projection.confidence * 100).toStringAsFixed(0)}%',
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
@@ -626,7 +628,7 @@ class _AnnualReportPageState extends State<AnnualReportPage>
                   ),
                 ],
               ),
-            )).toList(),
+            )),
           ],
         ),
       ),
@@ -635,7 +637,7 @@ class _AnnualReportPageState extends State<AnnualReportPage>
 
   Widget _buildSummaryItem(String title, String value, Color color, IconData icon) {
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(8),
@@ -644,7 +646,7 @@ class _AnnualReportPageState extends State<AnnualReportPage>
       child: Column(
         children: [
           Icon(icon, color: color, size: 24),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Text(
             title,
             style: TextStyle(
@@ -654,7 +656,7 @@ class _AnnualReportPageState extends State<AnnualReportPage>
             ),
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: 4),
+          const SizedBox(height: 4),
           Text(
             value,
             style: TextStyle(
@@ -671,7 +673,7 @@ class _AnnualReportPageState extends State<AnnualReportPage>
 
   Widget _buildMetricItem(String title, String value, Color color) {
     return Container(
-      padding: EdgeInsets.all(12),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(8),
@@ -689,7 +691,7 @@ class _AnnualReportPageState extends State<AnnualReportPage>
             ),
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: 4),
+          const SizedBox(height: 4),
           Text(
             value,
             style: TextStyle(
@@ -732,7 +734,7 @@ class _AnnualReportPageState extends State<AnnualReportPage>
       await _pdfService.printReport(pdfBytes, 'Relatório Anual $_selectedYear');
       
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Relatório PDF gerado com sucesso!'),
           backgroundColor: Colors.green,
         ),
@@ -750,7 +752,7 @@ class _AnnualReportPageState extends State<AnnualReportPage>
   Future<void> _printReport() async {
     // Implementar impressão
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
+      const SnackBar(
         content: Text('Funcionalidade de impressão em desenvolvimento'),
         backgroundColor: Colors.orange,
       ),

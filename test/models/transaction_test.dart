@@ -2,8 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
-import '../../lib/models/transaction.dart' as models;
-import '../../lib/models/member.dart';
+import 'package:fluxo_caixa_familiar/models/transaction.dart' as models;
+import 'package:fluxo_caixa_familiar/models/member.dart';
 
 void main() {
   group('Transaction Model Tests', () {
@@ -167,7 +167,7 @@ void main() {
 
     test('should display yesterday correctly', () {
       // Arrange
-      final yesterday = DateTime.now().subtract(Duration(days: 1));
+      final yesterday = DateTime.now().subtract(const Duration(days: 1));
       final transaction = models.Transaction(
         value: 100.0,
         date: yesterday,

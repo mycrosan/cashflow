@@ -4,6 +4,8 @@ import '../../providers/member_provider.dart';
 import '../../widgets/custom_button.dart';
 
 class MembersPage extends StatefulWidget {
+  const MembersPage({super.key});
+
   @override
   _MembersPageState createState() => _MembersPageState();
 }
@@ -21,12 +23,12 @@ class _MembersPageState extends State<MembersPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text('Membros da Família'),
+          title: const Text('Membros da Família'),
           backgroundColor: Theme.of(context).primaryColor,
           foregroundColor: Colors.white,
           actions: [
             IconButton(
-              icon: Icon(Icons.add),
+              icon: const Icon(Icons.add),
               onPressed: () {
                 _showAddMemberDialog(context);
               },
@@ -36,7 +38,7 @@ class _MembersPageState extends State<MembersPage> {
         body: Consumer<MemberProvider>(
           builder: (context, memberProvider, child) {
             if (memberProvider.isLoading) {
-              return Center(child: CircularProgressIndicator());
+              return const Center(child: CircularProgressIndicator());
             }
 
             if (memberProvider.error != null) {
@@ -44,17 +46,17 @@ class _MembersPageState extends State<MembersPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.error, size: 64, color: Colors.red),
-                    SizedBox(height: 16),
+                    const Icon(Icons.error, size: 64, color: Colors.red),
+                    const SizedBox(height: 16),
                     Text(
                       'Erro: ${memberProvider.error}',
-                      style: TextStyle(fontSize: 16),
+                      style: const TextStyle(fontSize: 16),
                       textAlign: TextAlign.center,
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () => memberProvider.loadMembers(),
-                      child: Text('Tentar Novamente'),
+                      child: const Text('Tentar Novamente'),
                     ),
                   ],
                 ),
@@ -66,19 +68,19 @@ class _MembersPageState extends State<MembersPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.people, size: 64, color: Colors.grey),
-                    SizedBox(height: 16),
+                    const Icon(Icons.people, size: 64, color: Colors.grey),
+                    const SizedBox(height: 16),
                     Text(
                       'Nenhum membro cadastrado',
                       style: TextStyle(fontSize: 18, color: Colors.grey[600]),
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     Text(
                       'Adicione os membros da sua família para começar',
                       style: TextStyle(fontSize: 14, color: Colors.grey[500]),
                       textAlign: TextAlign.center,
                     ),
-                    SizedBox(height: 24),
+                    const SizedBox(height: 24),
                     CustomButton(
                       text: 'Adicionar Primeiro Membro',
                       onPressed: () {
@@ -92,12 +94,12 @@ class _MembersPageState extends State<MembersPage> {
             }
 
             return ListView.builder(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               itemCount: memberProvider.members.length,
               itemBuilder: (context, index) {
                 final member = memberProvider.members[index];
                 return Card(
-                  margin: EdgeInsets.only(bottom: 12),
+                  margin: const EdgeInsets.only(bottom: 12),
                   child: ListTile(
                     leading: CircleAvatar(
                       backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
@@ -108,7 +110,7 @@ class _MembersPageState extends State<MembersPage> {
                     ),
                     title: Text(
                       member.name,
-                      style: TextStyle(fontWeight: FontWeight.w500),
+                      style: const TextStyle(fontWeight: FontWeight.w500),
                     ),
                     subtitle: Text(member.relation),
                     trailing: PopupMenuButton<String>(
@@ -116,7 +118,7 @@ class _MembersPageState extends State<MembersPage> {
                         _handleMemberAction(value, member);
                       },
                       itemBuilder: (context) => [
-                        PopupMenuItem(
+                        const PopupMenuItem(
                           value: 'edit',
                           child: Row(
                             children: [
@@ -126,7 +128,7 @@ class _MembersPageState extends State<MembersPage> {
                             ],
                           ),
                         ),
-                        PopupMenuItem(
+                        const PopupMenuItem(
                           value: 'delete',
                           child: Row(
                             children: [
@@ -155,7 +157,7 @@ class _MembersPageState extends State<MembersPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Adicionar Membro'),
+        title: const Text('Adicionar Membro'),
         content: Form(
           key: formKey,
           child: Column(
@@ -163,7 +165,7 @@ class _MembersPageState extends State<MembersPage> {
             children: [
               TextFormField(
                 controller: nameController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Nome',
                   border: OutlineInputBorder(),
                 ),
@@ -174,10 +176,10 @@ class _MembersPageState extends State<MembersPage> {
                   return null;
                 },
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: relationController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Relação (ex: Pai, Mãe, Filho)',
                   border: OutlineInputBorder(),
                 ),
@@ -194,7 +196,7 @@ class _MembersPageState extends State<MembersPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancelar'),
+            child: const Text('Cancelar'),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -209,14 +211,14 @@ class _MembersPageState extends State<MembersPage> {
                 if (success) {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
+                    const SnackBar(
                       content: Text('Membro adicionado com sucesso!'),
                       backgroundColor: Colors.green,
                     ),
                   );
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
+                    const SnackBar(
                       content: Text('Erro ao adicionar membro'),
                       backgroundColor: Colors.red,
                     ),
@@ -224,7 +226,7 @@ class _MembersPageState extends State<MembersPage> {
                 }
               }
             },
-            child: Text('Adicionar'),
+            child: const Text('Adicionar'),
           ),
         ],
       ),
@@ -250,7 +252,7 @@ class _MembersPageState extends State<MembersPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Editar Membro'),
+        title: const Text('Editar Membro'),
         content: Form(
           key: formKey,
           child: Column(
@@ -258,7 +260,7 @@ class _MembersPageState extends State<MembersPage> {
             children: [
               TextFormField(
                 controller: nameController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Nome',
                   border: OutlineInputBorder(),
                 ),
@@ -269,10 +271,10 @@ class _MembersPageState extends State<MembersPage> {
                   return null;
                 },
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: relationController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Relação (ex: Pai, Mãe, Filho)',
                   border: OutlineInputBorder(),
                 ),
@@ -289,7 +291,7 @@ class _MembersPageState extends State<MembersPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancelar'),
+            child: const Text('Cancelar'),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -305,14 +307,14 @@ class _MembersPageState extends State<MembersPage> {
                 if (success) {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
+                    const SnackBar(
                       content: Text('Membro atualizado com sucesso!'),
                       backgroundColor: Colors.green,
                     ),
                   );
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
+                    const SnackBar(
                       content: Text('Erro ao atualizar membro'),
                       backgroundColor: Colors.red,
                     ),
@@ -320,7 +322,7 @@ class _MembersPageState extends State<MembersPage> {
                 }
               }
             },
-            child: Text('Atualizar'),
+            child: const Text('Atualizar'),
           ),
         ],
       ),
@@ -331,12 +333,12 @@ class _MembersPageState extends State<MembersPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Excluir Membro'),
+        title: const Text('Excluir Membro'),
         content: Text('Tem certeza que deseja excluir "${member.name}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancelar'),
+            child: const Text('Cancelar'),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -346,14 +348,14 @@ class _MembersPageState extends State<MembersPage> {
               if (success) {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
+                  const SnackBar(
                     content: Text('Membro excluído com sucesso!'),
                     backgroundColor: Colors.green,
                   ),
                 );
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
+                  const SnackBar(
                     content: Text('Erro ao excluir membro'),
                     backgroundColor: Colors.red,
                   ),
@@ -364,7 +366,7 @@ class _MembersPageState extends State<MembersPage> {
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
             ),
-            child: Text('Excluir'),
+            child: const Text('Excluir'),
           ),
         ],
       ),

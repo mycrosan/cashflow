@@ -15,6 +15,7 @@ class RecurringTransaction {
   final int userId;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final DateTime? deletedAt;
 
   RecurringTransaction({
     this.id,
@@ -30,6 +31,7 @@ class RecurringTransaction {
     required this.userId,
     required this.createdAt,
     required this.updatedAt,
+    this.deletedAt,
   });
 
   factory RecurringTransaction.fromJson(Map<String, dynamic> json) {
@@ -64,6 +66,9 @@ class RecurringTransaction {
       updatedAt: json['atualizado_em'] is String 
         ? DateTime.parse(json['atualizado_em'])
         : DateTime.now(),
+      deletedAt: json['excluido_em'] != null 
+        ? DateTime.parse(json['excluido_em'])
+        : null,
     );
   }
 
@@ -82,6 +87,7 @@ class RecurringTransaction {
       'usuario_id': userId,
       'criado_em': createdAt.toIso8601String(),
       'atualizado_em': updatedAt.toIso8601String(),
+      'excluido_em': deletedAt?.toIso8601String(),
     };
   }
 
@@ -99,6 +105,7 @@ class RecurringTransaction {
     int? userId,
     DateTime? createdAt,
     DateTime? updatedAt,
+    DateTime? deletedAt,
   }) {
     return RecurringTransaction(
       id: id ?? this.id,
@@ -114,6 +121,7 @@ class RecurringTransaction {
       userId: userId ?? this.userId,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 
@@ -149,6 +157,8 @@ class RecurringTransaction {
 
   bool get isIncome => value > 0;
   bool get isExpense => value < 0;
+  bool get isDeleted => deletedAt != null;
+  bool get isActiveRecord => deletedAt == null;
   
   Color get displayColor {
     return isIncome ? Colors.green : Colors.red;
@@ -169,10 +179,10 @@ class RecurringTransaction {
     while (next.isBefore(now)) {
       switch (frequency) {
         case 'daily':
-          next = next.add(Duration(days: 1));
+          next = next.add(const Duration(days: 1));
           break;
         case 'weekly':
-          next = next.add(Duration(days: 7));
+          next = next.add(const Duration(days: 7));
           break;
         case 'monthly':
           next = DateTime(next.year, next.month + 1, next.day);

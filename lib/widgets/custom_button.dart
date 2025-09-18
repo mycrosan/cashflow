@@ -12,7 +12,7 @@ class CustomButton extends StatelessWidget {
   final bool outlined;
 
   const CustomButton({
-    Key? key,
+    super.key,
     required this.text,
     this.onPressed,
     this.isLoading = false,
@@ -22,7 +22,7 @@ class CustomButton extends StatelessWidget {
     this.height = 48,
     this.icon,
     this.outlined = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -94,7 +94,7 @@ class CustomButton extends StatelessWidget {
           const SizedBox(width: 8),
           Text(
             text,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
@@ -105,7 +105,7 @@ class CustomButton extends StatelessWidget {
 
     return Text(
       text,
-      style: TextStyle(
+      style: const TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.w600,
       ),

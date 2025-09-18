@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import '../../lib/widgets/custom_button.dart';
+import 'package:fluxo_caixa_familiar/widgets/custom_button.dart';
 
 void main() {
   group('CustomButton Widget Tests', () {
@@ -59,7 +59,7 @@ void main() {
 
       // Act
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
             body: CustomButton(
               text: 'Disabled Button',
@@ -177,7 +177,7 @@ void main() {
     testWidgets('should handle disabled state with custom colors', (WidgetTester tester) async {
       // Act
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
             body: CustomButton(
               text: 'Disabled Button',

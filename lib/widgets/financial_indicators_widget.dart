@@ -5,9 +5,9 @@ class FinancialIndicatorsWidget extends StatelessWidget {
   final FinancialIndicators indicators;
 
   const FinancialIndicatorsWidget({
-    Key? key,
+    super.key,
     required this.indicators,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

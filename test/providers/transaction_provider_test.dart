@@ -1,13 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
-import '../../lib/providers/transaction_provider.dart';
-import '../../lib/providers/auth_provider.dart';
-import '../../lib/models/transaction.dart' as models;
-import '../../lib/models/member.dart';
-import '../../lib/models/category.dart';
-import '../../lib/services/database_service.dart';
-import '../../lib/services/api_service.dart';
+import 'package:fluxo_caixa_familiar/providers/transaction_provider.dart';
+import 'package:fluxo_caixa_familiar/providers/auth_provider.dart';
+import 'package:fluxo_caixa_familiar/models/transaction.dart' as models;
+import 'package:fluxo_caixa_familiar/models/member.dart';
+import 'package:fluxo_caixa_familiar/models/category.dart';
+import 'package:fluxo_caixa_familiar/services/database_service.dart';
+import 'package:fluxo_caixa_familiar/services/api_service.dart';
 
 // Generate mocks
 @GenerateMocks([DatabaseService, ApiService, AuthProvider])

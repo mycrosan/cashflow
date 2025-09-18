@@ -2,11 +2,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
 import 'package:sqflite/sqflite.dart';
-import '../../lib/services/database_service.dart';
-import '../../lib/models/user.dart';
-import '../../lib/models/member.dart';
-import '../../lib/models/category.dart';
-import '../../lib/models/transaction.dart' as models;
+import 'package:fluxo_caixa_familiar/services/database_service.dart';
+import 'package:fluxo_caixa_familiar/models/user.dart';
+import 'package:fluxo_caixa_familiar/models/member.dart';
+import 'package:fluxo_caixa_familiar/models/category.dart';
+import 'package:fluxo_caixa_familiar/models/transaction.dart' as models;
 
 // Generate mocks
 @GenerateMocks([Database])

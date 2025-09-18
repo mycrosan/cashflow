@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluxo_caixa_familiar/models/member.dart';
 import 'package:provider/provider.dart';
 import '../../providers/quick_entry_provider.dart';
 import '../../providers/category_provider.dart';
@@ -12,7 +13,7 @@ import '../../widgets/custom_button.dart';
 class QuickEntryPage extends StatefulWidget {
   final Transaction? transactionToEdit;
   
-  const QuickEntryPage({Key? key, this.transactionToEdit}) : super(key: key);
+  const QuickEntryPage({super.key, this.transactionToEdit});
   
   @override
   _QuickEntryPageState createState() => _QuickEntryPageState();
@@ -43,7 +44,7 @@ class _QuickEntryPageState extends State<QuickEntryPage> {
       print('=== QUICK ENTRY: Atualizando dados da tela inicial ===');
       
       // Aguardar um pouco para evitar condições de corrida
-      await Future.delayed(Duration(milliseconds: 100));
+      await Future.delayed(const Duration(milliseconds: 100));
       
       // Atualizar dados sequencialmente para evitar conflitos
       await transactionProvider.loadAllTransactions();
@@ -171,7 +172,7 @@ class _QuickEntryPageState extends State<QuickEntryPage> {
                         controller: _valueController,
                         labelText: 'Valor',
                         hintText: '0,00',
-                        keyboardType: TextInputType.numberWithOptions(decimal: true),
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Valor é obrigatório';
@@ -216,7 +217,7 @@ class _QuickEntryPageState extends State<QuickEntryPage> {
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                               ),
                               items: categories.map((category) {
                                 return DropdownMenuItem<String>(
@@ -243,7 +244,7 @@ class _QuickEntryPageState extends State<QuickEntryPage> {
                               },
                             )
                           else
-                            Text('Nenhuma categoria disponível', style: TextStyle(color: Colors.grey)),
+                            const Text('Nenhuma categoria disponível', style: TextStyle(color: Colors.grey)),
                         ],
                       ),
                     ),
@@ -275,7 +276,7 @@ class _QuickEntryPageState extends State<QuickEntryPage> {
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                               ),
                               items: memberProvider.members.map((member) {
                                 return DropdownMenuItem<int>(
@@ -296,7 +297,7 @@ class _QuickEntryPageState extends State<QuickEntryPage> {
                               },
                             )
                           else
-                            Text('Nenhum membro disponível', style: TextStyle(color: Colors.grey)),
+                            const Text('Nenhum membro disponível', style: TextStyle(color: Colors.grey)),
                         ],
                       ),
                     ),
@@ -474,7 +475,7 @@ class _QuickEntryPageState extends State<QuickEntryPage> {
           SnackBar(
             content: Text('Transação $action com sucesso! ($tipoValor)'),
             backgroundColor: Colors.green,
-            duration: Duration(seconds: 2),
+            duration: const Duration(seconds: 2),
             action: SnackBarAction(
               label: 'Ver',
               textColor: Colors.white,
@@ -489,7 +490,7 @@ class _QuickEntryPageState extends State<QuickEntryPage> {
         await _updateHomeData();
         
         // Aguardar um pouco antes de fechar
-        await Future.delayed(Duration(milliseconds: 500));
+        await Future.delayed(const Duration(milliseconds: 500));
         
         if (mounted) {
           Navigator.pop(context, true);

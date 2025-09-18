@@ -6,6 +6,8 @@ import 'package:intl/intl.dart';
 import 'advanced_reports_page.dart';
 
 class ReportsPage extends StatefulWidget {
+  const ReportsPage({super.key});
+
   @override
   _ReportsPageState createState() => _ReportsPageState();
 }
@@ -15,18 +17,18 @@ class _ReportsPageState extends State<ReportsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Relatórios'),
+        title: const Text('Relatórios'),
         backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
       ),
       body: Consumer<ReportProvider>(
         builder: (context, reportProvider, child) {
           if (reportProvider.isLoading) {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           }
 
           return SingleChildScrollView(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -36,7 +38,7 @@ class _ReportsPageState extends State<ReportsPage> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(height: 24),
+                const SizedBox(height: 24),
 
                 // Botão para relatórios avançados
                 Card(
@@ -53,11 +55,11 @@ class _ReportsPageState extends State<ReportsPage> {
                     },
                     borderRadius: BorderRadius.circular(12),
                     child: Padding(
-                      padding: EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(20),
                       child: Row(
                         children: [
                           Container(
-                            padding: EdgeInsets.all(12),
+                            padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
                               color: Colors.indigo[100],
                               borderRadius: BorderRadius.circular(8),
@@ -68,7 +70,7 @@ class _ReportsPageState extends State<ReportsPage> {
                               size: 32,
                             ),
                           ),
-                          SizedBox(width: 16),
+                          const SizedBox(width: 16),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -81,7 +83,7 @@ class _ReportsPageState extends State<ReportsPage> {
                                     color: Colors.indigo[700],
                                   ),
                                 ),
-                                SizedBox(height: 4),
+                                const SizedBox(height: 4),
                                 Text(
                                   'Gráficos interativos, insights inteligentes e análises preditivas',
                                   style: TextStyle(
@@ -102,12 +104,12 @@ class _ReportsPageState extends State<ReportsPage> {
                     ),
                   ),
                 ),
-                SizedBox(height: 24),
+                const SizedBox(height: 24),
 
                 // Resumo mensal compacto
                 Card(
                   child: Padding(
-                    padding: EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(12),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -118,7 +120,7 @@ class _ReportsPageState extends State<ReportsPage> {
                             fontSize: 16,
                           ),
                         ),
-                        SizedBox(height: 12),
+                        const SizedBox(height: 12),
                         Row(
                           children: [
                             Expanded(
@@ -129,7 +131,7 @@ class _ReportsPageState extends State<ReportsPage> {
                                 Icons.trending_up,
                               ),
                             ),
-                            SizedBox(width: 8),
+                            const SizedBox(width: 8),
                             Expanded(
                               child: _buildCompactSummaryCard(
                                 'Despesas',
@@ -138,7 +140,7 @@ class _ReportsPageState extends State<ReportsPage> {
                                 Icons.trending_down,
                               ),
                             ),
-                            SizedBox(width: 8),
+                            const SizedBox(width: 8),
                             Expanded(
                               child: _buildCompactSummaryCard(
                                 'Saldo',
@@ -153,13 +155,13 @@ class _ReportsPageState extends State<ReportsPage> {
                     ),
                   ),
                 ),
-                SizedBox(height: 24),
+                const SizedBox(height: 24),
 
                 // Top categorias de despesa
                 if (reportProvider.expensesByCategory.isNotEmpty)
                   Card(
                     child: Padding(
-                      padding: EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -169,7 +171,7 @@ class _ReportsPageState extends State<ReportsPage> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          SizedBox(height: 16),
+                          const SizedBox(height: 16),
                           ...reportProvider.getTopExpenseCategories().map((entry) {
                             final percentage = reportProvider.formatPercentage(
                               entry.value,
@@ -178,13 +180,13 @@ class _ReportsPageState extends State<ReportsPage> {
                             return ListTile(
                               leading: CircleAvatar(
                                 backgroundColor: Colors.red.withOpacity(0.1),
-                                child: Icon(Icons.category, color: Colors.red),
+                                child: const Icon(Icons.category, color: Colors.red),
                               ),
                               title: Text(entry.key),
                               subtitle: Text(percentage),
                               trailing: Text(
                                 reportProvider.formatCurrency(entry.value),
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   color: Colors.red,
                                 ),
@@ -195,13 +197,13 @@ class _ReportsPageState extends State<ReportsPage> {
                       ),
                     ),
                   ),
-                SizedBox(height: 24),
+                const SizedBox(height: 24),
 
                 // Top categorias de receita
                 if (reportProvider.incomeByCategory.isNotEmpty)
                   Card(
                     child: Padding(
-                      padding: EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -211,7 +213,7 @@ class _ReportsPageState extends State<ReportsPage> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          SizedBox(height: 16),
+                          const SizedBox(height: 16),
                           ...reportProvider.getTopIncomeCategories().map((entry) {
                             final percentage = reportProvider.formatPercentage(
                               entry.value,
@@ -220,13 +222,13 @@ class _ReportsPageState extends State<ReportsPage> {
                             return ListTile(
                               leading: CircleAvatar(
                                 backgroundColor: Colors.green.withOpacity(0.1),
-                                child: Icon(Icons.category, color: Colors.green),
+                                child: const Icon(Icons.category, color: Colors.green),
                               ),
                               title: Text(entry.key),
                               subtitle: Text(percentage),
                               trailing: Text(
                                 reportProvider.formatCurrency(entry.value),
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   color: Colors.green,
                                 ),
@@ -237,7 +239,7 @@ class _ReportsPageState extends State<ReportsPage> {
                       ),
                     ),
                   ),
-                SizedBox(height: 24),
+                const SizedBox(height: 24),
 
                 // Ações
                 Row(
@@ -248,20 +250,20 @@ class _ReportsPageState extends State<ReportsPage> {
                         onPressed: () {
                           // TODO: Implementar relatório anual
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Relatório anual em desenvolvimento')),
+                            const SnackBar(content: Text('Relatório anual em desenvolvimento')),
                           );
                         },
                         outlined: true,
                       ),
                     ),
-                    SizedBox(width: 12),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: CustomButton(
                         text: 'Exportar PDF',
                         onPressed: () {
                           // TODO: Implementar exportação PDF
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Exportação PDF em desenvolvimento')),
+                            const SnackBar(content: Text('Exportação PDF em desenvolvimento')),
                           );
                         },
                         outlined: true,
@@ -279,7 +281,7 @@ class _ReportsPageState extends State<ReportsPage> {
 
   Widget _buildCompactSummaryCard(String label, double value, Color color, IconData icon) {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
       decoration: BoxDecoration(
         color: color.withOpacity(0.08),
         borderRadius: BorderRadius.circular(6),
@@ -289,7 +291,7 @@ class _ReportsPageState extends State<ReportsPage> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, color: color, size: 18),
-          SizedBox(height: 4),
+          const SizedBox(height: 4),
           Text(
             label,
             style: TextStyle(
@@ -301,7 +303,7 @@ class _ReportsPageState extends State<ReportsPage> {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
-          SizedBox(height: 2),
+          const SizedBox(height: 2),
           Text(
             NumberFormat.currency(
               locale: 'pt_BR',

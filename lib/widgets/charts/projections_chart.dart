@@ -7,10 +7,10 @@ class ProjectionsChart extends StatefulWidget {
   final List<FinancialProjection> projections;
 
   const ProjectionsChart({
-    Key? key,
+    super.key,
     required this.historicalTrends,
     required this.projections,
-  }) : super(key: key);
+  });
 
   @override
   State<ProjectionsChart> createState() => _ProjectionsChartState();
@@ -21,7 +21,7 @@ class _ProjectionsChartState extends State<ProjectionsChart> {
   @override
   Widget build(BuildContext context) {
     if (widget.historicalTrends.isEmpty && widget.projections.isEmpty) {
-      return Container(
+      return SizedBox(
         height: 300,
         child: Center(
           child: Text(
@@ -60,10 +60,10 @@ class _ProjectionsChartState extends State<ProjectionsChart> {
           ),
           titlesData: FlTitlesData(
             show: true,
-            rightTitles: AxisTitles(
+            rightTitles: const AxisTitles(
               sideTitles: SideTitles(showTitles: false),
             ),
-            topTitles: AxisTitles(
+            topTitles: const AxisTitles(
               sideTitles: SideTitles(showTitles: false),
             ),
             bottomTitles: AxisTitles(
@@ -98,7 +98,7 @@ class _ProjectionsChartState extends State<ProjectionsChart> {
                       ),
                     );
                   }
-                  return Text('');
+                  return const Text('');
                 },
               ),
             ),
@@ -142,7 +142,7 @@ class _ProjectionsChartState extends State<ProjectionsChart> {
                       '${_formatDate(trend.date)}\n'
                       'Saldo: ${_formatCurrency(trend.balance)}\n'
                       'Dados Históricos',
-                      TextStyle(
+                      const TextStyle(
                         color: Colors.white,
                         fontSize: 12,
                       ),
@@ -155,7 +155,7 @@ class _ProjectionsChartState extends State<ProjectionsChart> {
                       'Saldo Projetado: ${_formatCurrency(projection.projectedBalance)}\n'
                       'Confiança: ${(projection.confidence * 100).toStringAsFixed(0)}%\n'
                       'Base: ${_getBasisLabel(projection.basis)}',
-                      TextStyle(
+                      const TextStyle(
                         color: Colors.white,
                         fontSize: 12,
                       ),
@@ -168,7 +168,7 @@ class _ProjectionsChartState extends State<ProjectionsChart> {
             getTouchedSpotIndicator: (barData, spotIndexes) {
               return spotIndexes.map((spotIndex) {
                 return TouchedSpotIndicatorData(
-                  FlLine(
+                  const FlLine(
                     color: Colors.blue,
                     strokeWidth: 2,
                   ),
@@ -269,7 +269,7 @@ class _ProjectionsChartState extends State<ProjectionsChart> {
           color: Colors.orange.withOpacity(0.3),
           barWidth: 1,
           isStrokeCapRound: true,
-          dotData: FlDotData(show: false),
+          dotData: const FlDotData(show: false),
           belowBarData: BarAreaData(
             show: true,
             color: Colors.orange.withOpacity(0.1),

@@ -7,10 +7,14 @@ import '../../providers/recurring_transaction_provider.dart';
 import '../../providers/sync_provider.dart';
 import '../../models/transaction.dart';
 import '../../models/recurring_transaction.dart';
+import '../../models/recurring_operation_type.dart';
 import '../../widgets/transaction_loader.dart';
+import '../../widgets/recurring_operation_dialog.dart';
 import 'add_transaction_page.dart';
 
 class TransacoesMensaisPage extends StatefulWidget {
+  const TransacoesMensaisPage({super.key});
+
   @override
   _TransacoesMensaisPageState createState() => _TransacoesMensaisPageState();
 }
@@ -77,8 +81,11 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
       
       print('=== MONTHLY TRANSACTIONS: Recarregando dados após operação de recorrência ===');
       
-      // Usar o novo método que inclui limpeza de transações órfãs
-      await transactionProvider.refresh();
+      // Limpar cache específico do mês atual para forçar recarga
+      transactionProvider.clearMonthCacheFor(_selectedMonth);
+      
+      // Recarregar apenas o mês atual sem refresh completo
+      await transactionProvider.loadTransactionsForMonthWithRecurring(_selectedMonth);
       
       print('=== MONTHLY TRANSACTIONS: Dados recarregados com sucesso ===');
       
@@ -215,13 +222,13 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
           title: _isSearchVisible 
             ? TextField(
                 controller: _searchController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   hintText: 'Buscar transações...',
                   border: InputBorder.none,
                   hintStyle: TextStyle(color: Colors.white70),
                   prefixIcon: Icon(Icons.search, color: Colors.white70),
                 ),
-                style: TextStyle(color: Colors.white, fontSize: 16),
+                style: const TextStyle(color: Colors.white, fontSize: 16),
                 onChanged: (value) {
                   setState(() {
                     _searchQuery = value;
@@ -233,7 +240,7 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
                 children: [
                   // Botão mês anterior
                   IconButton(
-                    icon: Icon(Icons.chevron_left),
+                    icon: const Icon(Icons.chevron_left),
                     onPressed: _isLoadingMonth ? null : _previousMonth,
                     tooltip: 'Mês Anterior',
                   ),
@@ -241,13 +248,13 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
                   Expanded(
                     child: Text(
                       DateFormat('MMMM yyyy', 'pt_BR').format(_selectedMonth),
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       textAlign: TextAlign.center,
                     ),
                   ),
                   // Botão próximo mês
                   IconButton(
-                    icon: Icon(Icons.chevron_right),
+                    icon: const Icon(Icons.chevron_right),
                     onPressed: _isLoadingMonth ? null : _nextMonth,
                     tooltip: 'Próximo Mês',
                   ),
@@ -271,7 +278,7 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
             ),
             // Botão mês atual
             IconButton(
-              icon: Icon(Icons.today),
+              icon: const Icon(Icons.today),
               onPressed: _isLoadingMonth ? null : _goToCurrentMonth,
               tooltip: 'Mês Atual',
             ),
@@ -304,7 +311,7 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
       builder: (context, provider, child) {
         // Se está carregando o mês, não mostra dados
         if (_isLoadingMonth) {
-          return Container(
+          return SizedBox(
             height: 150,
             child: Center(
               child: Text(
@@ -373,9 +380,9 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
         print('- Total despesas: $totalExpense');
         
         return Card(
-          margin: EdgeInsets.symmetric(horizontal: 8),
+          margin: const EdgeInsets.symmetric(horizontal: 8),
           child: Padding(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -391,7 +398,7 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
                   ),
                 ),
                 
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 
                 // Resumo detalhado
                 Row(
@@ -408,7 +415,7 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
                               });
                             },
                             child: Container(
-                              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
                                 color: _showIncome ? Colors.green.withOpacity(0.2) : Colors.transparent,
                                 borderRadius: BorderRadius.circular(8),
@@ -420,7 +427,7 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Text(
+                                  const Text(
                                     'Receitas',
                                     style: TextStyle(
                                       fontSize: 14,
@@ -429,8 +436,8 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
                                     ),
                                   ),
                                   if (_showIncome) ...[
-                                    SizedBox(width: 4),
-                                    Icon(
+                                    const SizedBox(width: 4),
+                                    const Icon(
                                       Icons.check_circle,
                                       size: 16,
                                       color: Colors.green,
@@ -440,7 +447,7 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
                               ),
                             ),
                           ),
-                          SizedBox(height: 4),
+                          const SizedBox(height: 4),
                           Text(
                             'Recebidas:',
                             style: TextStyle(
@@ -457,8 +464,8 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
                             ),
                           ),
                           if (totalIncomePending > 0) ...[
-                            SizedBox(height: 4),
-                            Text(
+                            const SizedBox(height: 4),
+                            const Text(
                               'Falta receber:',
                               style: TextStyle(
                                 fontSize: 12,
@@ -467,7 +474,7 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
                             ),
                             Text(
                               _formatCurrency(totalIncomePending),
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.orange,
@@ -490,7 +497,7 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
                               });
                             },
                             child: Container(
-                              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
                                 color: _showExpense ? Colors.red.withOpacity(0.2) : Colors.transparent,
                                 borderRadius: BorderRadius.circular(8),
@@ -502,7 +509,7 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Text(
+                                  const Text(
                                     'Despesas',
                                     style: TextStyle(
                                       fontSize: 14,
@@ -511,8 +518,8 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
                                     ),
                                   ),
                                   if (_showExpense) ...[
-                                    SizedBox(width: 4),
-                                    Icon(
+                                    const SizedBox(width: 4),
+                                    const Icon(
                                       Icons.check_circle,
                                       size: 16,
                                       color: Colors.red,
@@ -522,7 +529,7 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
                               ),
                             ),
                           ),
-                          SizedBox(height: 4),
+                          const SizedBox(height: 4),
                           Text(
                             'Pagas:',
                             style: TextStyle(
@@ -539,8 +546,8 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
                             ),
                           ),
                           if (totalExpensePending > 0) ...[
-                            SizedBox(height: 4),
-                            Text(
+                            const SizedBox(height: 4),
+                            const Text(
                               'Falta pagar:',
                               style: TextStyle(
                                 fontSize: 12,
@@ -549,7 +556,7 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
                             ),
                             Text(
                               _formatCurrency(totalExpensePending),
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.orange,
@@ -575,7 +582,7 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
       builder: (context, provider, child) {
         // Se está carregando o mês, não mostra nada (já está sendo mostrado o loader em tela cheia)
         if (_isLoadingMonth) {
-          return Container(
+          return SizedBox(
             height: 200,
             child: Center(
               child: Text(
@@ -590,9 +597,9 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
         }
         
         if (provider.isLoading) {
-          return Container(
+          return SizedBox(
             height: 200,
-            child: TransactionLoader(
+            child: const TransactionLoader(
               message: "Carregando transações...",
               size: 80.0,
             ),
@@ -600,23 +607,23 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
         }
 
         if (provider.error != null) {
-          return Container(
+          return SizedBox(
             height: 200,
             child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.error, size: 64, color: Colors.red),
-                  SizedBox(height: 16),
+                  const Icon(Icons.error, size: 64, color: Colors.red),
+                  const SizedBox(height: 16),
                   Text(
                     'Erro: ${provider.error}',
-                    style: TextStyle(fontSize: 16),
+                    style: const TextStyle(fontSize: 16),
                     textAlign: TextAlign.center,
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () => _loadMonthData(),
-                    child: Text('Tentar Novamente'),
+                    child: const Text('Tentar Novamente'),
                   ),
                 ],
               ),
@@ -628,19 +635,19 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
         final filteredTransactions = _filterTransactions(transactions);
 
         if (filteredTransactions.isEmpty) {
-          return Container(
+          return SizedBox(
             height: 200,
             child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.inbox_outlined, size: 64, color: Colors.grey),
-                  SizedBox(height: 16),
+                  const Icon(Icons.inbox_outlined, size: 64, color: Colors.grey),
+                  const SizedBox(height: 16),
                   Text(
                     'Nenhuma transação encontrada',
                     style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Text(
                     'Adicione transações ou verifique os filtros',
                     style: TextStyle(fontSize: 14, color: Colors.grey[500]),
@@ -654,13 +661,13 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
         return Column(
           children: [
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
                     'Transações (${filteredTransactions.length})',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
@@ -701,13 +708,13 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
     final color = isIncome ? Colors.green : Colors.red;
 
     return Card(
-      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
       child: InkWell(
         onTap: () => _showTransactionEditMode(transaction),
         onLongPress: () => _showTransactionOptions(transaction),
         borderRadius: BorderRadius.circular(8),
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: Row(
             children: [
               // Informações principais - organizadas em 2 linhas
@@ -731,16 +738,16 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        SizedBox(width: 8),
+                        const SizedBox(width: 8),
                         // Badges compactos
                         if (transaction.isPaid) ...[
                           Container(
-                            padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
                               color: Colors.green.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: Text(
+                            child: const Text(
                               'Pago',
                               style: TextStyle(
                                 fontSize: 10,
@@ -749,16 +756,16 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
                               ),
                             ),
                           ),
-                          SizedBox(width: 4),
+                          const SizedBox(width: 4),
                         ],
                         if (transaction.recurringTransactionId != null) ...[
                           Container(
-                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
                               color: Colors.blue.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: Text(
+                            child: const Text(
                               'Recorrente',
                               style: TextStyle(
                                 fontSize: 10,
@@ -770,11 +777,11 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
                         ],
                       ],
                     ),
-                    SizedBox(height: 3),
+                    const SizedBox(height: 3),
                     
-                    // Linha 2: Responsável + Data
+                    // Linha 2: ID + Responsável + Data
                     Text(
-                      '${transaction.associatedMember.name} • ${DateFormat('dd/MM/yyyy').format(transaction.date)}',
+                      'ID: ${transaction.id} • ${transaction.associatedMember.name} • ${DateFormat('dd/MM/yyyy').format(transaction.date)}',
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey[600],
@@ -786,7 +793,7 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
                 ),
               ),
               
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               
               // Status de pagamento e valor - lado direito compacto
               Column(
@@ -797,7 +804,7 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
                   GestureDetector(
                     onTap: () => _togglePaymentStatus(transaction),
                     child: Container(
-                      padding: EdgeInsets.all(6),
+                      padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
                         color: transaction.isPaid 
                           ? Colors.green.withOpacity(0.1)
@@ -815,7 +822,7 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   
                   // Valor - menor
                   Text(
@@ -854,8 +861,8 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
               transaction.value > 0 ? Icons.trending_up : Icons.trending_down,
               color: transaction.value > 0 ? Colors.green : Colors.red,
             ),
-            SizedBox(width: 8),
-            Text('Editar Transação'),
+            const SizedBox(width: 8),
+            const Text('Editar Transação'),
           ],
         ),
         content: Column(
@@ -865,28 +872,28 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
             // Informações da transação
             Card(
               child: Padding(
-                padding: EdgeInsets.all(12),
+                padding: const EdgeInsets.all(12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Categoria: ${transaction.category}',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text('Valor: ${_formatCurrency(transaction.value)}'),
                     Text('Membro: ${transaction.associatedMember.name}'),
                     Text('Data: ${DateFormat('dd/MM/yyyy').format(transaction.date)}'),
                     if (transaction.notes != null) Text('Observações: ${transaction.notes}'),
                     if (transaction.recurringTransactionId != null) 
                       Container(
-                        margin: EdgeInsets.only(top: 8),
-                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        margin: const EdgeInsets.only(top: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
                           color: Colors.blue.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: Text(
+                        child: const Text(
                           'Transação Recorrente',
                           style: TextStyle(
                             fontSize: 12,
@@ -899,8 +906,8 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
                 ),
               ),
             ),
-            SizedBox(height: 16),
-            Text(
+            const SizedBox(height: 16),
+            const Text(
               'Escolha uma ação:',
               style: TextStyle(
                 fontSize: 16,
@@ -912,14 +919,14 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancelar'),
+            child: const Text('Cancelar'),
           ),
           IconButton(
             onPressed: () {
               Navigator.pop(context);
               _showEditTransactionDialog(transaction);
             },
-            icon: Icon(Icons.edit),
+            icon: const Icon(Icons.edit),
             tooltip: 'Editar',
             style: IconButton.styleFrom(
               backgroundColor: Theme.of(context).primaryColor,
@@ -932,7 +939,7 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
                 Navigator.pop(context);
                 _showRecurringDeleteOptions(transaction);
               },
-              icon: Icon(Icons.delete),
+              icon: const Icon(Icons.delete),
               tooltip: 'Remover',
               style: IconButton.styleFrom(
                 backgroundColor: Colors.red,
@@ -945,7 +952,7 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
                 Navigator.pop(context);
                 _showDeleteConfirmation(transaction);
               },
-              icon: Icon(Icons.delete),
+              icon: const Icon(Icons.delete),
               tooltip: 'Remover',
               style: IconButton.styleFrom(
                 backgroundColor: Colors.red,
@@ -964,16 +971,16 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
         mainAxisSize: MainAxisSize.min,
         children: [
           ListTile(
-            leading: Icon(Icons.edit),
-            title: Text('Editar'),
+            leading: const Icon(Icons.edit),
+            title: const Text('Editar'),
             onTap: () {
               Navigator.pop(context);
               _showEditTransactionDialog(transaction);
             },
           ),
           ListTile(
-            leading: Icon(Icons.delete, color: Colors.red),
-            title: Text('Excluir', style: TextStyle(color: Colors.red)),
+            leading: const Icon(Icons.delete, color: Colors.red),
+            title: const Text('Excluir', style: TextStyle(color: Colors.red)),
             onTap: () {
               Navigator.pop(context);
               _showDeleteConfirmation(transaction);
@@ -989,7 +996,7 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => AddTransactionPage(),
+        builder: (context) => const AddTransactionPage(),
       ),
     );
     
@@ -1027,23 +1034,23 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(description),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () async {
                 final date = await showDatePicker(
                   context: context,
                   initialDate: selectedDate,
                   firstDate: DateTime(2020),
-                  lastDate: DateTime.now().add(Duration(days: 30)),
+                  lastDate: DateTime.now().add(const Duration(days: 30)),
                 );
                 if (date != null) {
                   selectedDate = date;
                   Navigator.of(context).pop(date);
                 }
               },
-              child: Text('Selecionar Data'),
+              child: const Text('Selecionar Data'),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pop(DateTime.now());
@@ -1055,7 +1062,7 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: Text('Cancelar'),
+            child: const Text('Cancelar'),
           ),
         ],
       ),
@@ -1071,32 +1078,25 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
   }
 
   void _showEditTransactionDialog(Transaction transaction) async {
-    // Se é uma transação recorrente, buscar a transação recorrente correspondente
+    // Se é uma transação recorrente, mostrar diálogo de opções
     if (transaction.recurringTransactionId != null) {
       try {
-        final recurringProvider = Provider.of<RecurringTransactionProvider>(context, listen: false);
-        await recurringProvider.loadRecurringTransactions();
+        final operationType = await showDialog<RecurringOperationType>(
+           context: context,
+           builder: (context) => RecurringOperationDialog(
+             transaction: transaction,
+             operationType: 'edit',
+           ),
+         );
         
-        final recurringTransaction = recurringProvider.recurringTransactions.firstWhere(
-          (rt) => rt.id == transaction.recurringTransactionId,
-          orElse: () => throw Exception('Transação recorrente não encontrada'),
-        );
-        
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => AddTransactionPage(
-              recurringTransactionToEdit: recurringTransaction,
-            ),
-          ),
-        ).then((_) {
-          _loadMonthData();
-        });
+        if (operationType != null && mounted) {
+          await _handleRecurringEdit(transaction, operationType);
+        }
       } catch (e) {
-        print('Erro ao buscar transação recorrente: $e');
+        print('Erro ao editar transação recorrente: $e');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro ao carregar transação recorrente: $e'),
+            content: Text('Erro ao editar transação recorrente: $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -1116,35 +1116,252 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
     }
   }
 
-  void _showRecurringDeleteOptions(Transaction transaction) {
+  Future<void> _handleRecurringEdit(Transaction transaction, RecurringOperationType operationType) async {
+    try {
+      final recurringProvider = Provider.of<RecurringTransactionProvider>(context, listen: false);
+      
+      switch (operationType) {
+        case RecurringOperationType.thisOnly:
+          // Editar apenas esta transação - usar método específico do provider
+          // Primeiro, navegar para edição normal para obter os novos dados
+          final result = await Navigator.push<Transaction>(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AddTransactionPage(
+                transactionToEdit: transaction,
+              ),
+            ),
+          );
+          
+          if (result != null && mounted) {
+            // Usar o método específico para editar apenas esta transação
+            final success = await recurringProvider.editSingleRecurringTransaction(
+              originalTransaction: transaction,
+              updatedTransaction: result,
+            );
+            
+            if (success) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Transação editada com sucesso!')),
+              );
+              _loadMonthData();
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Erro: ${recurringProvider.error}')),
+              );
+            }
+          }
+          break;
+          
+        case RecurringOperationType.thisAndFuture:
+          // Editar esta e futuras - buscar recorrência e navegar para edição
+          await recurringProvider.loadRecurringTransactions();
+          
+          final recurringTransaction = recurringProvider.recurringTransactions.firstWhere(
+            (rt) => rt.id == transaction.recurringTransactionId,
+            orElse: () => throw Exception('Transação recorrente não encontrada'),
+          );
+          
+          if (mounted) {
+            final result = await Navigator.push<Transaction>(
+              context,
+              MaterialPageRoute(
+                builder: (context) => AddTransactionPage(
+                  transactionToEdit: transaction,
+                ),
+              ),
+            );
+            
+            if (result != null && mounted) {
+              // Usar o método específico para editar esta e futuras transações
+              final success = await recurringProvider.editThisAndFutureRecurringTransactions(
+                originalTransaction: transaction,
+                updatedTransaction: result,
+              );
+              
+              if (success) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Transação atual e futuras editadas com sucesso!')),
+                );
+                _loadMonthData();
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Erro: ${recurringProvider.error}')),
+                );
+              }
+            }
+          }
+          break;
+          
+        case RecurringOperationType.allOccurrences:
+          // Editar todas as ocorrências - buscar recorrência e navegar para edição
+          await recurringProvider.loadRecurringTransactions();
+          
+          final recurringTransaction = recurringProvider.recurringTransactions.firstWhere(
+            (rt) => rt.id == transaction.recurringTransactionId,
+            orElse: () => throw Exception('Transação recorrente não encontrada'),
+          );
+          
+          if (mounted) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => AddTransactionPage(
+                  recurringTransactionToEdit: recurringTransaction,
+                ),
+              ),
+            ).then((_) {
+              _loadMonthData();
+            });
+          }
+          break;
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao editar transação: $e')),
+      );
+    }
+  }
+
+  void _showRecurringDeleteOptions(Transaction transaction) async {
+    print('🔄 DEBUG: _showRecurringDeleteOptions chamada');
+    print('🔄 DEBUG: Transaction ID: ${transaction.id}');
+    print('🔄 DEBUG: Recurring ID: ${transaction.recurringTransactionId}');
+    print('🔄 DEBUG: Category: ${transaction.category}');
+    print('🔄 DEBUG: Value: ${transaction.value}');
+    print('🔄 DEBUG: Date: ${transaction.date}');
+    
+    try {
+      final operationType = await showDialog<RecurringOperationType>(
+        context: context,
+        builder: (context) => RecurringOperationDialog(
+          transaction: transaction,
+          operationType: 'delete',
+          showAllOccurrencesOption: true, // Mostrar opção de exclusão completa
+        ),
+      );
+      
+      if (operationType != null && mounted) {
+        await _handleRecurringDelete(transaction, operationType);
+      }
+    } catch (e) {
+      print('Erro ao excluir transação recorrente: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro ao excluir transação recorrente: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _handleRecurringDelete(Transaction transaction, RecurringOperationType operationType) async {
+    try {
+      final recurringProvider = Provider.of<RecurringTransactionProvider>(context, listen: false);
+      
+      switch (operationType) {
+        case RecurringOperationType.thisOnly:
+          // Excluir apenas esta transação (soft delete)
+          print('🔄 DEBUG: Excluindo apenas esta transação');
+          final transactionProvider = Provider.of<TransactionProvider>(context, listen: false);
+          final success = await transactionProvider.deleteTransaction(transaction.id!);
+          
+          if (success) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Transação removida com sucesso!')),
+            );
+            _loadMonthData();
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Erro ao remover transação')),
+            );
+          }
+          break;
+          
+        case RecurringOperationType.thisAndFuture:
+          // Excluir esta e futuras transações
+          print('🔄 DEBUG: Excluindo transação atual e futuras');
+          if (transaction.recurringTransactionId != null) {
+            final success = await recurringProvider.deleteCurrentAndFutureTransactions(
+              transaction.recurringTransactionId!,
+              transaction.date,
+            );
+            
+            if (success) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Transação atual e futuras removidas com sucesso!')),
+              );
+              _loadMonthData();
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Erro: ${recurringProvider.error}')),
+              );
+            }
+          }
+          break;
+          
+        case RecurringOperationType.allOccurrences:
+          // Excluir completamente a recorrência (hard delete)
+          print('🔄 DEBUG: Excluindo recorrência completamente');
+          if (transaction.recurringTransactionId != null) {
+            final success = await recurringProvider.deleteRecurringTransaction(transaction.recurringTransactionId!);
+            
+            if (success) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Recorrência removida completamente!')),
+              );
+              _loadMonthData();
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Erro: ${recurringProvider.error}')),
+              );
+            }
+          }
+          break;
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao excluir transação: $e')),
+      );
+    }
+  }
+
+  void _showOldRecurringDeleteOptions(Transaction transaction) {
+    print('🔄 DEBUG: _showOldRecurringDeleteOptions chamada');
+    print('🔄 DEBUG: Transaction ID: ${transaction.id}');
+    print('🔄 DEBUG: Recurring ID: ${transaction.recurringTransactionId}');
+    print('🔄 DEBUG: Category: ${transaction.category}');
+    print('🔄 DEBUG: Value: ${transaction.value}');
+    print('🔄 DEBUG: Date: ${transaction.date}');
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Row(
+        title: const Row(
           children: [
             Icon(Icons.warning, color: Colors.orange),
             SizedBox(width: 8),
-            Text('Remover Transação Recorrente'),
+            Text('Remover'),
           ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Esta é uma transação recorrente. Escolha como deseja removê-la:',
               style: TextStyle(fontSize: 16),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Card(
               child: Padding(
-                padding: EdgeInsets.all(12),
+                padding: const EdgeInsets.all(12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Transação: ${transaction.category}',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     Text('Valor: ${_formatCurrency(transaction.value)}'),
                     Text('Data: ${DateFormat('dd/MM/yyyy').format(transaction.date)}'),
@@ -1152,7 +1369,7 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
                 ),
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Text(
               'Opções de remoção:',
               style: TextStyle(
@@ -1166,15 +1383,16 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancelar'),
+            child: const Text('Cancelar'),
           ),
           ElevatedButton.icon(
             onPressed: () {
+              print('🔄 DEBUG: Usuário escolheu "Apenas este"');
               Navigator.pop(context);
               _deleteSingleTransaction(transaction);
             },
-            icon: Icon(Icons.delete_outline),
-            label: Text('Apenas este'),
+            icon: const Icon(Icons.delete_outline),
+            label: const Text('Apenas este'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.orange,
               foregroundColor: Colors.white,
@@ -1182,11 +1400,12 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
           ),
           ElevatedButton.icon(
             onPressed: () {
+              print('🔄 DEBUG: Usuário escolheu "Este e futuros"');
               Navigator.pop(context);
               _deleteRecurringTransaction(transaction);
             },
-            icon: Icon(Icons.delete_forever),
-            label: Text('Este e futuros'),
+            icon: const Icon(Icons.delete_forever),
+            label: const Text('Este e futuros'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
@@ -1198,10 +1417,16 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
   }
 
   void _showDeleteConfirmation(Transaction transaction) {
+    print('🗑️ DEBUG: _showDeleteConfirmation chamada');
+    print('🗑️ DEBUG: Transaction ID: ${transaction.id}');
+    print('🗑️ DEBUG: Category: ${transaction.category}');
+    print('🗑️ DEBUG: Value: ${transaction.value}');
+    print('🗑️ DEBUG: Date: ${transaction.date}');
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Row(
+        title: const Row(
           children: [
             Icon(Icons.delete, color: Colors.red),
             SizedBox(width: 8),
@@ -1212,20 +1437,20 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Tem certeza que deseja excluir esta transação?',
               style: TextStyle(fontSize: 16),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Card(
               child: Padding(
-                padding: EdgeInsets.all(12),
+                padding: const EdgeInsets.all(12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Transação: ${transaction.category}',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     Text('Valor: ${_formatCurrency(transaction.value)}'),
                     Text('Data: ${DateFormat('dd/MM/yyyy').format(transaction.date)}'),
@@ -1238,14 +1463,15 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancelar'),
+            child: const Text('Cancelar'),
           ),
           IconButton(
             onPressed: () {
+              print('🗑️ DEBUG: Usuário confirmou exclusão');
               Navigator.pop(context);
               _deleteSingleTransaction(transaction);
             },
-            icon: Icon(Icons.delete),
+            icon: const Icon(Icons.delete),
             tooltip: 'Excluir',
             style: IconButton.styleFrom(
               backgroundColor: Colors.red,
@@ -1258,13 +1484,32 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
   }
 
   Future<void> _deleteSingleTransaction(Transaction transaction) async {
+    print('🔥 DEBUG: _deleteSingleTransaction iniciada');
+    print('🔥 DEBUG: Transaction ID: ${transaction.id}');
+    print('🔥 DEBUG: Recurring ID: ${transaction.recurringTransactionId}');
+    
     try {
-      final provider = Provider.of<TransactionProvider>(context, listen: false);
-      final success = await provider.deleteTransaction(transaction.id!);
+      bool success = false;
+      
+      // Se é uma transação recorrente, usar o método específico para não afetar a recorrência
+      if (transaction.recurringTransactionId != null) {
+        final recurringProvider = Provider.of<RecurringTransactionProvider>(context, listen: false);
+        final transactionProvider = Provider.of<TransactionProvider>(context, listen: false);
+        success = await recurringProvider.deleteSingleRecurringTransaction(
+          transaction.id!, 
+          transactionProvider: transactionProvider
+        );
+        print('Removendo apenas esta transação recorrente: ${transaction.category} - ${transaction.date.day}/${transaction.date.month}/${transaction.date.year}');
+      } else {
+        // Se não é recorrente, usar o método normal
+        final provider = Provider.of<TransactionProvider>(context, listen: false);
+        success = await provider.deleteTransaction(transaction.id!);
+        print('Removendo transação normal: ${transaction.category}');
+      }
       
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Transação excluída com sucesso'),
             backgroundColor: Colors.green,
           ),
@@ -1272,7 +1517,7 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
         _loadMonthData();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Erro ao excluir transação'),
             backgroundColor: Colors.red,
           ),
@@ -1290,21 +1535,28 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
 
   Future<void> _deleteRecurringTransaction(Transaction transaction) async {
     try {
+      print('=== DEBUG: Iniciando _deleteRecurringTransaction ===');
+      print('Transaction ID: ${transaction.id}');
+      print('Recurring Transaction ID: ${transaction.recurringTransactionId}');
+      print('Transaction Date: ${transaction.date}');
+      print('Transaction Category: ${transaction.category}');
+      
       final transactionProvider = Provider.of<TransactionProvider>(context, listen: false);
       final recurringProvider = Provider.of<RecurringTransactionProvider>(context, listen: false);
       
       // Mostrar diálogo de confirmação final
+      print('=== DEBUG: Mostrando diálogo de confirmação ===');
       final confirmed = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          title: Row(
+          title: const Row(
             children: [
               Icon(Icons.warning, color: Colors.red),
               SizedBox(width: 8),
               Text('Confirmação Final'),
             ],
           ),
-          content: Column(
+          content: const Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1314,8 +1566,9 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
               ),
               SizedBox(height: 8),
               Text('• Remover esta transação'),
-              Text('• Remover a recorrência associada'),
               Text('• Remover todas as transações futuras desta recorrência'),
+              Text('• Manter as transações passadas'),
+              Text('• Manter a recorrência ativa'),
               SizedBox(height: 16),
               Text(
                 'Esta ação não pode ser desfeita!',
@@ -1329,11 +1582,11 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: Text('Cancelar'),
+              child: const Text('Cancelar'),
             ),
             IconButton(
               onPressed: () => Navigator.pop(context, true),
-              icon: Icon(Icons.delete_forever),
+              icon: const Icon(Icons.delete_forever),
               tooltip: 'Confirmar',
               style: IconButton.styleFrom(
                 backgroundColor: Colors.red,
@@ -1344,27 +1597,38 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
         ),
       );
 
-      if (confirmed != true) return;
+      print('=== DEBUG: Resultado da confirmação: $confirmed ===');
+      if (confirmed != true) {
+        print('=== DEBUG: Usuário cancelou a exclusão ===');
+        return;
+      }
 
+      print('=== DEBUG: Usuário confirmou a exclusão ===');
       print('Iniciando remoção de transação recorrente: ${transaction.category}');
       print('ID da recorrência: ${transaction.recurringTransactionId}');
 
-      // Se é uma transação recorrente, remover a recorrência (que automaticamente remove todas as transações órfãs)
+      // Se é uma transação recorrente, remover apenas esta e futuras transações (mantém as passadas)
       if (transaction.recurringTransactionId != null) {
-        print('Removendo recorrência e todas as transações associadas...');
+        print('=== DEBUG: Removendo transação atual e futuras da recorrência... ===');
         
-        final recurringDeleteResult = await recurringProvider.deleteRecurringTransaction(transaction.recurringTransactionId!);
+        final recurringDeleteResult = await recurringProvider.deleteCurrentAndFutureTransactions(
+          transaction.recurringTransactionId!, 
+          transaction.date
+        );
+        print('=== DEBUG: Resultado da exclusão: $recurringDeleteResult ===');
         if (!recurringDeleteResult) {
-          throw Exception('Erro ao remover recorrência');
+          throw Exception('Erro ao remover transações atuais e futuras');
         }
-        print('Recorrência e todas as transações associadas removidas com sucesso');
+        print('=== DEBUG: Transação atual e futuras removidas com sucesso ===');
       } else {
         // Se não é recorrente, apenas remover a transação atual
+        print('=== DEBUG: Removendo transação não recorrente... ===');
         final deleteResult = await transactionProvider.deleteTransaction(transaction.id!);
+        print('=== DEBUG: Resultado da exclusão: $deleteResult ===');
         if (!deleteResult) {
           throw Exception('Erro ao remover transação');
         }
-        print('Transação removida com sucesso');
+        print('=== DEBUG: Transação removida com sucesso ===');
       }
       
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1373,7 +1637,7 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
             ? 'Recorrência e todas as transações associadas foram removidas'
             : 'Transação removida com sucesso'),
           backgroundColor: Colors.green,
-          duration: Duration(seconds: 3),
+          duration: const Duration(seconds: 3),
         ),
       );
       

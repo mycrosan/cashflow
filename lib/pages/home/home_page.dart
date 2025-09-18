@@ -24,6 +24,8 @@ import '../backup/backup_page.dart';
 import '../../widgets/transaction_loader.dart';
 
 class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
   @override
   _HomePageState createState() => _HomePageState();
 }
@@ -156,7 +158,7 @@ class _HomePageState extends State<HomePage> {
       await transactionProvider.initialize();
       
       // Aguardar um pouco para garantir que o TransactionProvider esteja completamente pronto
-      await Future.delayed(Duration(milliseconds: 100));
+      await Future.delayed(const Duration(milliseconds: 100));
       
       // Definir o TransactionProvider no ReportProvider
       reportProvider.setTransactionProvider(transactionProvider);
@@ -204,10 +206,10 @@ class _HomePageState extends State<HomePage> {
             return Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('Fluxo Família'),
+                const Text('Fluxo Família'),
                 if (syncProvider.lastSyncTime != null) ...[
-                  SizedBox(width: 8),
-                  Icon(
+                  const SizedBox(width: 8),
+                  const Icon(
                     Icons.cloud_done,
                     size: 16,
                     color: Colors.greenAccent,
@@ -225,7 +227,7 @@ class _HomePageState extends State<HomePage> {
             builder: (context, syncProvider, child) {
               return IconButton(
                 icon: syncProvider.isSyncing 
-                  ? SizedBox(
+                  ? const SizedBox(
                       width: 20,
                       height: 20,
                       child: CircularProgressIndicator(
@@ -233,7 +235,7 @@ class _HomePageState extends State<HomePage> {
                         valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
                     )
-                  : Icon(Icons.sync),
+                  : const Icon(Icons.sync),
                 onPressed: syncProvider.isSyncing ? null : _handleSync,
                 tooltip: syncProvider.isSyncing 
                   ? 'Sincronizando...' 
@@ -242,10 +244,10 @@ class _HomePageState extends State<HomePage> {
             },
           ),
           PopupMenuButton<String>(
-            icon: Icon(Icons.more_vert),
+            icon: const Icon(Icons.more_vert),
             onSelected: _handleMenuAction,
             itemBuilder: (context) => [
-              PopupMenuItem(
+              const PopupMenuItem(
                 value: 'profile',
                 child: Row(
                   children: [
@@ -255,7 +257,7 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
               ),
-              PopupMenuItem(
+              const PopupMenuItem(
                 value: 'backup',
                 child: Row(
                   children: [
@@ -265,7 +267,7 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
               ),
-              PopupMenuItem(
+              const PopupMenuItem(
                 value: 'settings',
                 child: Row(
                   children: [
@@ -275,7 +277,7 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
               ),
-              PopupMenuItem(
+              const PopupMenuItem(
                 value: 'logout',
                 child: Row(
                   children: [
@@ -298,7 +300,7 @@ class _HomePageState extends State<HomePage> {
           });
         },
         type: BottomNavigationBarType.fixed,
-        items: [
+        items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'Início',
@@ -391,17 +393,17 @@ class _HomePageState extends State<HomePage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.error, size: 64, color: Colors.red),
-                  SizedBox(height: 16),
+                  const Icon(Icons.error, size: 64, color: Colors.red),
+                  const SizedBox(height: 16),
                   Text(
                     'Erro: ${transactionProvider.error ?? reportProvider.error}',
-                    style: TextStyle(fontSize: 16),
+                    style: const TextStyle(fontSize: 16),
                     textAlign: TextAlign.center,
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () => _refreshData(),
-                    child: Text('Tentar Novamente'),
+                    child: const Text('Tentar Novamente'),
                   ),
                 ],
               ),
@@ -415,28 +417,28 @@ class _HomePageState extends State<HomePage> {
           return RefreshIndicator(
             onRefresh: () => _refreshData(),
             child: SingleChildScrollView(
-              physics: AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.all(16),
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Cabeçalho do mês
                   _buildMonthHeader(),
-                  SizedBox(height: 24),
+                  const SizedBox(height: 24),
                   
                   // Resumo financeiro
                   _buildFinancialSummary(),
-                  SizedBox(height: 24),
+                  const SizedBox(height: 24),
                   
                   // Ações rápidas
                   _buildQuickActions(),
                   
                   // Se não há transações, mostrar mensagem
                   if (transactionProvider.transactions.isEmpty) ...[
-                    SizedBox(height: 24),
+                    const SizedBox(height: 24),
                     Card(
                       child: Padding(
-                        padding: EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(16),
                         child: Column(
                           children: [
                             Icon(
@@ -444,7 +446,7 @@ class _HomePageState extends State<HomePage> {
                               size: 48,
                               color: Colors.grey[400],
                             ),
-                            SizedBox(height: 16),
+                            const SizedBox(height: 16),
                             Text(
                               'Nenhuma transação encontrada',
                               style: TextStyle(
@@ -453,7 +455,7 @@ class _HomePageState extends State<HomePage> {
                                 color: Colors.grey[600],
                               ),
                             ),
-                            SizedBox(height: 8),
+                            const SizedBox(height: 8),
                             Text(
                               'Adicione sua primeira transação usando os botões acima',
                               style: TextStyle(
@@ -480,7 +482,7 @@ class _HomePageState extends State<HomePage> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         IconButton(
-          icon: Icon(Icons.chevron_left),
+          icon: const Icon(Icons.chevron_left),
           onPressed: _isLoadingMonth ? null : () => _previousMonth(),
         ),
         Expanded(
@@ -499,7 +501,7 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                     ),
-                    SizedBox(width: 8),
+                    const SizedBox(width: 8),
                     Text(
                       'Carregando...',
                       style: TextStyle(
@@ -512,7 +514,7 @@ class _HomePageState extends State<HomePage> {
                 )
               : Text(
                   DateFormat('MMMM yyyy', 'pt_BR').format(_selectedMonth),
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
@@ -520,7 +522,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
         IconButton(
-          icon: Icon(Icons.chevron_right),
+          icon: const Icon(Icons.chevron_right),
           onPressed: _isLoadingMonth ? null : () => _nextMonth(),
         ),
       ],
@@ -549,18 +551,18 @@ class _HomePageState extends State<HomePage> {
         
         return Card(
           child: Padding(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'Resumo do Mês',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 Row(
                   children: [
                     Expanded(
@@ -571,7 +573,7 @@ class _HomePageState extends State<HomePage> {
                         Icons.trending_up,
                       ),
                     ),
-                    SizedBox(width: 16),
+                    const SizedBox(width: 16),
                     Expanded(
                       child: _buildSummaryItem(
                         'Despesas',
@@ -582,12 +584,12 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ],
                 ),
-                SizedBox(height: 16),
-                Divider(),
+                const SizedBox(height: 16),
+                const Divider(),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
+                    const Text(
                       'Saldo',
                       style: TextStyle(
                         fontSize: 16,
@@ -616,7 +618,7 @@ class _HomePageState extends State<HomePage> {
     return Column(
       children: [
         Icon(icon, color: color, size: 32),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
         Text(
           label,
           style: TextStyle(
@@ -624,7 +626,7 @@ class _HomePageState extends State<HomePage> {
             color: Colors.grey[600],
           ),
         ),
-        SizedBox(height: 4),
+        const SizedBox(height: 4),
         Text(
           NumberFormat.currency(
             locale: 'pt_BR',
@@ -648,18 +650,18 @@ class _HomePageState extends State<HomePage> {
   Widget _buildQuickActions() {
     return Card(
       child: Padding(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Ações Rápidas',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Row(
               children: [
                 Expanded(
@@ -671,7 +673,7 @@ class _HomePageState extends State<HomePage> {
                       final result = await Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => AddTransactionPage(
+                          builder: (context) => const AddTransactionPage(
                             initialTransactionType: TransactionType.income,
                           ),
                         ),
@@ -684,7 +686,7 @@ class _HomePageState extends State<HomePage> {
                     },
                   ),
                 ),
-                SizedBox(width: 12),
+                const SizedBox(width: 12),
                 Expanded(
                   child: _buildActionButton(
                     'Adicionar Despesa',
@@ -694,7 +696,7 @@ class _HomePageState extends State<HomePage> {
                       final result = await Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => AddTransactionPage(
+                          builder: (context) => const AddTransactionPage(
                             initialTransactionType: TransactionType.expense,
                           ),
                         ),
@@ -721,7 +723,7 @@ class _HomePageState extends State<HomePage> {
       style: ElevatedButton.styleFrom(
         backgroundColor: color.withOpacity(0.1),
         foregroundColor: color,
-        padding: EdgeInsets.symmetric(vertical: 16),
+        padding: const EdgeInsets.symmetric(vertical: 16),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
         ),
@@ -729,11 +731,11 @@ class _HomePageState extends State<HomePage> {
       child: Column(
         children: [
           Icon(icon, size: 32),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Text(
             label,
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 12),
+            style: const TextStyle(fontSize: 12),
           ),
         ],
       ),
@@ -761,7 +763,7 @@ class _HomePageState extends State<HomePage> {
       case 'settings':
         // TODO: Implementar configurações
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Configurações em breve!'),
             backgroundColor: Colors.orange,
           ),
@@ -777,12 +779,12 @@ class _HomePageState extends State<HomePage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Sair'),
-        content: Text('Tem certeza que deseja sair?'),
+        title: const Text('Sair'),
+        content: const Text('Tem certeza que deseja sair?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancelar'),
+            child: const Text('Cancelar'),
           ),
           ElevatedButton(
             onPressed: () {
@@ -793,7 +795,7 @@ class _HomePageState extends State<HomePage> {
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
             ),
-            child: Text('Sair'),
+            child: const Text('Sair'),
           ),
         ],
       ),
@@ -823,22 +825,22 @@ class _HomePageState extends State<HomePage> {
             ChangeNotifierProvider.value(value: categoryProvider),
           ],
           child: AlertDialog(
-            title: Text('Sincronizar com Firebase'),
+            title: const Text('Sincronizar com Firebase'),
             content: Consumer3<TransactionProvider, MemberProvider, CategoryProvider>(
               builder: (context, transactionProvider, memberProvider, categoryProvider, child) {
                 return Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Esta ação irá sincronizar todos os seus dados com a nuvem:'),
-                    SizedBox(height: 16),
+                    const Text('Esta ação irá sincronizar todos os seus dados com a nuvem:'),
+                    const SizedBox(height: 16),
                     Text('• ${transactionProvider.transactions.length} transações'),
                     Text('• ${memberProvider.members.length} membros'),
                     Text('• ${categoryProvider.categories.length} categorias'),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     Text('Usuário: ${authProvider.currentUser?.name ?? 'Desconhecido'}'),
-                    SizedBox(height: 16),
-                    Text('Deseja continuar?'),
+                    const SizedBox(height: 16),
+                    const Text('Deseja continuar?'),
                   ],
                 );
               },
@@ -846,11 +848,11 @@ class _HomePageState extends State<HomePage> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: Text('Cancelar'),
+                child: const Text('Cancelar'),
               ),
               ElevatedButton(
                 onPressed: () => Navigator.pop(context, true),
-                child: Text('Sincronizar'),
+                child: const Text('Sincronizar'),
               ),
             ],
           ),
@@ -877,7 +879,7 @@ class _HomePageState extends State<HomePage> {
                 : 'Erro na sincronização: ${result['error']}',
             ),
             backgroundColor: result['success'] ? Colors.green : Colors.red,
-            duration: Duration(seconds: 3),
+            duration: const Duration(seconds: 3),
           ),
         );
       }
@@ -888,7 +890,7 @@ class _HomePageState extends State<HomePage> {
           SnackBar(
             content: Text('Erro na sincronização: $e'),
             backgroundColor: Colors.red,
-            duration: Duration(seconds: 3),
+            duration: const Duration(seconds: 3),
           ),
         );
       }

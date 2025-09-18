@@ -10,7 +10,7 @@ import '../config/app_config.dart';
 class DatabaseService {
   static Database? _database;
   static String get _databaseName => AppConfig.databaseName;
-  static int get _databaseVersion => 13;
+  static int get _databaseVersion => 14;
 
   // Tabelas
   static const String _tableUsers = 'usuarios';
@@ -101,6 +101,7 @@ class DatabaseService {
         pago INTEGER NOT NULL DEFAULT 0,
         data_pagamento TEXT,
         usuario_id INTEGER NOT NULL,
+        excluido_em TEXT,
         criado_em TEXT NOT NULL,
         atualizado_em TEXT NOT NULL,
         FOREIGN KEY (responsavel_id) REFERENCES $_tableMembers (id),
@@ -123,6 +124,7 @@ class DatabaseService {
         ativo INTEGER NOT NULL DEFAULT 1,
         observacoes TEXT,
         usuario_id INTEGER NOT NULL,
+        excluido_em TEXT,
         criado_em TEXT NOT NULL,
         atualizado_em TEXT NOT NULL,
         FOREIGN KEY (responsavel_id) REFERENCES $_tableMembers (id),
@@ -144,11 +146,11 @@ class DatabaseService {
     ''');
 
     // Índices para melhor performance
-    await _createIndexIfNotExists(db, 'idx_transactions_date', '$_tableTransactions', 'data');
-    await _createIndexIfNotExists(db, 'idx_transactions_category', '$_tableTransactions', 'categoria');
-    await _createIndexIfNotExists(db, 'idx_transactions_member', '$_tableTransactions', 'responsavel_id');
-    await _createIndexIfNotExists(db, 'idx_transactions_sync', '$_tableTransactions', 'status_sincronizacao');
-    await _createIndexIfNotExists(db, 'idx_sync_log_status', '$_tableSyncLog', 'status_sincronizacao');
+    await _createIndexIfNotExists(db, 'idx_transactions_date', _tableTransactions, 'data');
+    await _createIndexIfNotExists(db, 'idx_transactions_category', _tableTransactions, 'categoria');
+    await _createIndexIfNotExists(db, 'idx_transactions_member', _tableTransactions, 'responsavel_id');
+    await _createIndexIfNotExists(db, 'idx_transactions_sync', _tableTransactions, 'status_sincronizacao');
+    await _createIndexIfNotExists(db, 'idx_sync_log_status', _tableSyncLog, 'status_sincronizacao');
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -231,6 +233,25 @@ class DatabaseService {
           await _recreateAllTables(db);
         }
       }
+      
+      if (oldVersion < 14) {
+        // Versão 14: Adicionar campo excluido_em para soft delete
+        try {
+          // Adicionar campo excluido_em na tabela de transações
+          await db.execute('ALTER TABLE $_tableTransactions ADD COLUMN excluido_em TEXT');
+          print('Campo excluido_em adicionado na tabela $_tableTransactions');
+          
+          // Adicionar campo excluido_em na tabela de transações recorrentes
+          await db.execute('ALTER TABLE $_tableRecurringTransactions ADD COLUMN excluido_em TEXT');
+          print('Campo excluido_em adicionado na tabela $_tableRecurringTransactions');
+          
+          print('Migração para versão 14 concluída com sucesso');
+        } catch (e) {
+          print('Erro na migração para versão 14: $e');
+          // Se der erro, recriar todas as tabelas
+          await _recreateAllTables(db);
+        }
+      }
     } catch (e) {
       // Em caso de erro, recriar todas as tabelas
       await _recreateAllTables(db);
@@ -253,6 +274,7 @@ class DatabaseService {
         pago INTEGER NOT NULL DEFAULT 0,
         data_pagamento TEXT,
         usuario_id INTEGER NOT NULL,
+        excluido_em TEXT,
         criado_em TEXT NOT NULL,
         atualizado_em TEXT NOT NULL,
         FOREIGN KEY (responsavel_id) REFERENCES $_tableMembers (id),
@@ -530,6 +552,10 @@ class DatabaseService {
       whereArgs.add(userId);
     }
 
+    // Filtrar registros não excluídos (soft delete)
+    if (whereClause.isNotEmpty) whereClause += ' AND ';
+    whereClause += 'excluido_em IS NULL';
+
     print('=== DATABASE SERVICE: Consultando transações ===');
     print('WHERE: $whereClause');
     print('WHERE ARGS: $whereArgs');
@@ -589,25 +615,164 @@ class DatabaseService {
     return null;
   }
 
+  // Verificar se existe transação recorrente ATIVA (não excluída)
+  Future<bool> checkRecurringTransactionExistsIncludingDeleted({
+    required int recurringTransactionId,
+    required DateTime date,
+  }) async {
+    final db = await database;
+    
+    final startOfDay = DateTime(date.year, date.month, date.day);
+    final endOfDay = DateTime(date.year, date.month, date.day, 23, 59, 59);
+    
+    final maps = await db.query(
+      _tableTransactions,
+      where: 'recorrencia_id = ? AND data >= ? AND data <= ?',
+      whereArgs: [
+        recurringTransactionId,
+        startOfDay.toIso8601String(),
+        endOfDay.toIso8601String(),
+      ],
+    );
+    
+    print('=== DATABASE SERVICE: Verificando transação recorrente ===');
+    print('RecurringTransactionId: $recurringTransactionId');
+    print('Data: ${date.toIso8601String()}');
+    print('Registros encontrados (incluindo excluídos): ${maps.length}');
+    
+    if (maps.isNotEmpty) {
+      final transaction = maps.first;
+      final isDeleted = transaction['excluido_em'] != null;
+      print('Transação encontrada - ID: ${transaction['id']}, Excluída: $isDeleted');
+      print('excluido_em: ${transaction['excluido_em']}');
+      
+      // Retorna true apenas se a transação NÃO foi excluída (está ativa)
+      // Se foi excluída, permite criar uma nova transação
+      return !isDeleted;
+    }
+    
+    // Se não encontrou nenhuma transação, permite criar
+    return false;
+  }
+
+  // Buscar transações excluídas (para funcionalidade de restaurar)
+  Future<List<Transaction>> getDeletedTransactions({
+    DateTime? startDate,
+    DateTime? endDate,
+    int? userId,
+  }) async {
+    final db = await database;
+    
+    String whereClause = 'excluido_em IS NOT NULL';
+    List<dynamic> whereArgs = [];
+    
+    if (startDate != null) {
+      whereClause += ' AND data >= ?';
+      whereArgs.add(startDate.toIso8601String());
+    }
+    
+    if (endDate != null) {
+      whereClause += ' AND data <= ?';
+      whereArgs.add(endDate.toIso8601String());
+    }
+    
+    if (userId != null) {
+      whereClause += ' AND usuario_id = ?';
+      whereArgs.add(userId);
+    }
+
+    final maps = await db.query(
+      _tableTransactions,
+      where: whereClause,
+      whereArgs: whereArgs.isEmpty ? null : whereArgs,
+      orderBy: 'excluido_em DESC',
+    );
+
+    // Converter para objetos Transaction com relacionamentos
+    final transactions = <Transaction>[];
+    for (final map in maps) {
+      final member = await getMember(map['responsavel_id'] as int);
+      if (member != null) {
+        final transaction = Transaction.fromJson({
+          ...map,
+          'responsavel': member.toJson(),
+        });
+        transactions.add(transaction);
+      }
+    }
+
+    return transactions;
+  }
+
   Future<int> updateTransaction(Transaction transaction) async {
     final db = await database;
     final data = transaction.toJson();
     
-    return await db.update(
+    // Debug: Verificar dados que serão salvos
+    print('💾 DEBUG DATABASE - Atualizando transação ID: ${transaction.id}');
+    print('💾 DEBUG DATABASE - Campo excluido_em: ${data['excluido_em']}');
+    
+    final result = await db.update(
       _tableTransactions,
       data,
       where: 'id = ?',
       whereArgs: [transaction.id],
     );
+    
+    // Debug: Verificar se a atualização foi bem-sucedida
+    print('💾 DEBUG DATABASE - Linhas afetadas: $result');
+    
+    // Debug: Verificar se o campo foi realmente salvo
+    final savedTransaction = await db.query(
+      _tableTransactions,
+      where: 'id = ?',
+      whereArgs: [transaction.id],
+    );
+    if (savedTransaction.isNotEmpty) {
+      print('💾 DEBUG DATABASE - Campo salvo: ${savedTransaction.first['excluido_em']}');
+    }
+    
+    return result;
   }
 
   Future<int> deleteTransaction(int id) async {
     final db = await database;
-    return await db.delete(
+    
+    print('=== DATABASE SERVICE: Soft delete da transação $id ===');
+    
+    // Fazer soft delete: apenas marcar como excluída
+    final result = await db.update(
+      _tableTransactions,
+      {
+        'excluido_em': DateTime.now().toIso8601String(),
+        'atualizado_em': DateTime.now().toIso8601String(),
+      },
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+    
+    print('=== DATABASE SERVICE: Transação $id marcada como excluída (soft delete) ===');
+    print('=== DATABASE SERVICE: Linhas afetadas: $result ===');
+    
+    return result;
+  }
+
+  // Método para exclusão física (hard delete) - usar apenas quando necessário
+  Future<int> deleteTransactionPhysically(int id) async {
+    final db = await database;
+    
+    print('=== DATABASE SERVICE: Hard delete da transação $id ===');
+    
+    final result = await db.delete(
       _tableTransactions,
       where: 'id = ?',
       whereArgs: [id],
     );
+    
+    print('=== DATABASE SERVICE: Transação $id removida fisicamente ===');
+    print('=== DATABASE SERVICE: Linhas afetadas: $result ===');
+    
+    return result;
   }
 
   // === RECURRING TRANSACTIONS ===
@@ -623,7 +788,7 @@ class DatabaseService {
   Future<List<RecurringTransaction>> getRecurringTransactions({int? userId}) async {
     final db = await database;
     
-    String whereClause = 'ativo = 1';
+    String whereClause = 'ativo = 1 AND excluido_em IS NULL';
     List<dynamic> whereArgs = [];
     
     if (userId != null) {
@@ -636,6 +801,40 @@ class DatabaseService {
       where: whereClause,
       whereArgs: whereArgs.isEmpty ? null : whereArgs,
       orderBy: 'data_inicio ASC',
+    );
+
+    final recurringTransactions = <RecurringTransaction>[];
+    for (final map in maps) {
+      final member = await getMember(map['responsavel_id'] as int);
+      if (member != null) {
+        final recurringTransaction = RecurringTransaction.fromJson({
+          ...map,
+          'responsavel': member.toJson(),
+        });
+        recurringTransactions.add(recurringTransaction);
+      }
+    }
+
+    return recurringTransactions;
+  }
+
+  // Buscar transações recorrentes excluídas (para funcionalidade de restaurar)
+  Future<List<RecurringTransaction>> getDeletedRecurringTransactions({int? userId}) async {
+    final db = await database;
+    
+    String whereClause = 'excluido_em IS NOT NULL';
+    List<dynamic> whereArgs = [];
+    
+    if (userId != null) {
+      whereClause += ' AND usuario_id = ?';
+      whereArgs.add(userId);
+    }
+    
+    final maps = await db.query(
+      _tableRecurringTransactions,
+      where: whereClause,
+      whereArgs: whereArgs.isEmpty ? null : whereArgs,
+      orderBy: 'excluido_em DESC',
     );
 
     final recurringTransactions = <RecurringTransaction>[];
@@ -885,5 +1084,33 @@ class DatabaseService {
     return List.generate(maps.length, (i) {
       return RecurringTransaction.fromJson(maps[i]);
     });
+  }
+
+  /// Verifica se existe uma transação recorrente excluída (soft delete) para uma data específica
+  Future<bool> hasDeletedRecurringTransactionForDate({
+    required int recurringTransactionId,
+    required DateTime date,
+  }) async {
+    final db = await database;
+    
+    final startOfDay = DateTime(date.year, date.month, date.day);
+    final endOfDay = DateTime(date.year, date.month, date.day, 23, 59, 59);
+    
+    final maps = await db.query(
+      _tableTransactions,
+      where: 'recorrencia_id = ? AND data >= ? AND data <= ? AND excluido_em IS NOT NULL',
+      whereArgs: [
+        recurringTransactionId,
+        startOfDay.toIso8601String(),
+        endOfDay.toIso8601String(),
+      ],
+    );
+    
+    print('=== DATABASE SERVICE: Verificando transação recorrente excluída ===');
+    print('RecurringTransactionId: $recurringTransactionId');
+    print('Data: ${date.toIso8601String()}');
+    print('Transações excluídas encontradas: ${maps.length}');
+    
+    return maps.isNotEmpty;
   }
 }

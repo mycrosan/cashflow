@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../models/user.dart';
+import '../admin/deleted_items_page.dart';
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({Key? key}) : super(key: key);
+  const ProfilePage({super.key});
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -52,14 +53,14 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Perfil'),
+        title: const Text('Perfil'),
         backgroundColor: Colors.indigo,
         foregroundColor: Colors.white,
         actions: [
           if (_isEditing)
             TextButton(
               onPressed: _cancelEdit,
-              child: Text(
+              child: const Text(
                 'Cancelar',
                 style: TextStyle(color: Colors.white),
               ),
@@ -68,7 +69,7 @@ class _ProfilePageState extends State<ProfilePage> {
             onPressed: _isEditing ? _saveProfile : _startEdit,
             child: Text(
               _isEditing ? 'Salvar' : 'Editar',
-              style: TextStyle(color: Colors.white),
+              style: const TextStyle(color: Colors.white),
             ),
           ),
         ],
@@ -76,20 +77,20 @@ class _ProfilePageState extends State<ProfilePage> {
       body: Consumer<AuthProvider>(
         builder: (context, authProvider, child) {
           if (authProvider.isLoading) {
-            return Center(
+            return const Center(
               child: CircularProgressIndicator(),
             );
           }
 
           final user = authProvider.currentUser;
           if (user == null) {
-            return Center(
+            return const Center(
               child: Text('Usuário não encontrado'),
             );
           }
 
           return SingleChildScrollView(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             child: Form(
               key: _formKey,
               child: Column(
@@ -97,18 +98,22 @@ class _ProfilePageState extends State<ProfilePage> {
                 children: [
                   // Avatar e informações básicas
                   _buildProfileHeader(user),
-                  SizedBox(height: 24),
+                  const SizedBox(height: 24),
                   
                   // Informações pessoais
                   _buildPersonalInfo(),
-                  SizedBox(height: 24),
+                  const SizedBox(height: 24),
                   
                   // Alterar senha
                   _buildChangePassword(),
-                  SizedBox(height: 24),
+                  const SizedBox(height: 24),
                   
                   // Estatísticas
                   _buildStatistics(),
+                  const SizedBox(height: 24),
+                  
+                  // Configurações administrativas
+                  _buildAdminSettings(),
                 ],
               ),
             ),
@@ -121,27 +126,27 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget _buildProfileHeader(User user) {
     return Card(
       child: Padding(
-        padding: EdgeInsets.all(20),
+        padding: const EdgeInsets.all(20),
         child: Column(
           children: [
             CircleAvatar(
               radius: 50,
               backgroundColor: Colors.indigo.withOpacity(0.1),
-              child: Icon(
+              child: const Icon(
                 Icons.person,
                 size: 50,
                 color: Colors.indigo,
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Text(
               user.name,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
               user.email,
               style: TextStyle(
@@ -149,7 +154,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 color: Colors.grey[600],
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -168,13 +173,13 @@ class _ProfilePageState extends State<ProfilePage> {
       children: [
         Text(
           value,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
             color: Colors.indigo,
           ),
         ),
-        SizedBox(height: 4),
+        const SizedBox(height: 4),
         Text(
           label,
           style: TextStyle(
@@ -189,22 +194,22 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget _buildPersonalInfo() {
     return Card(
       child: Padding(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Informações Pessoais',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             TextFormField(
               controller: _nameController,
               enabled: _isEditing,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Nome',
                 prefixIcon: Icon(Icons.person_outline),
                 border: OutlineInputBorder(),
@@ -216,11 +221,11 @@ class _ProfilePageState extends State<ProfilePage> {
                 return null;
               },
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             TextFormField(
               controller: _emailController,
               enabled: _isEditing,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Email',
                 prefixIcon: Icon(Icons.email_outlined),
                 border: OutlineInputBorder(),
@@ -244,14 +249,14 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget _buildChangePassword() {
     return Card(
       child: Padding(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
+                const Text(
                   'Alterar Senha',
                   style: TextStyle(
                     fontSize: 18,
@@ -265,13 +270,13 @@ class _ProfilePageState extends State<ProfilePage> {
               ],
             ),
             if (_isChangingPassword) ...[
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _currentPasswordController,
                 obscureText: _obscureCurrentPassword,
                 decoration: InputDecoration(
                   labelText: 'Senha Atual',
-                  prefixIcon: Icon(Icons.lock_outline),
+                  prefixIcon: const Icon(Icons.lock_outline),
                   suffixIcon: IconButton(
                     icon: Icon(_obscureCurrentPassword ? Icons.visibility : Icons.visibility_off),
                     onPressed: () {
@@ -280,7 +285,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       });
                     },
                   ),
-                  border: OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -289,13 +294,13 @@ class _ProfilePageState extends State<ProfilePage> {
                   return null;
                 },
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _newPasswordController,
                 obscureText: _obscureNewPassword,
                 decoration: InputDecoration(
                   labelText: 'Nova Senha',
-                  prefixIcon: Icon(Icons.lock_outline),
+                  prefixIcon: const Icon(Icons.lock_outline),
                   suffixIcon: IconButton(
                     icon: Icon(_obscureNewPassword ? Icons.visibility : Icons.visibility_off),
                     onPressed: () {
@@ -304,7 +309,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       });
                     },
                   ),
-                  border: OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -316,13 +321,13 @@ class _ProfilePageState extends State<ProfilePage> {
                   return null;
                 },
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _confirmPasswordController,
                 obscureText: _obscureConfirmPassword,
                 decoration: InputDecoration(
                   labelText: 'Confirmar Nova Senha',
-                  prefixIcon: Icon(Icons.lock_outline),
+                  prefixIcon: const Icon(Icons.lock_outline),
                   suffixIcon: IconButton(
                     icon: Icon(_obscureConfirmPassword ? Icons.visibility : Icons.visibility_off),
                     onPressed: () {
@@ -331,7 +336,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       });
                     },
                   ),
-                  border: OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -343,7 +348,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   return null;
                 },
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -352,7 +357,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     backgroundColor: Colors.indigo,
                     foregroundColor: Colors.white,
                   ),
-                  child: Text('Salvar Nova Senha'),
+                  child: const Text('Salvar Nova Senha'),
                 ),
               ),
             ],
@@ -365,18 +370,18 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget _buildStatistics() {
     return Card(
       child: Padding(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Estatísticas',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Row(
               children: [
                 Expanded(
@@ -387,7 +392,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     Colors.blue,
                   ),
                 ),
-                SizedBox(width: 12),
+                const SizedBox(width: 12),
                 Expanded(
                   child: _buildStatCard(
                     'Membros',
@@ -398,7 +403,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ],
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             Row(
               children: [
                 Expanded(
@@ -409,7 +414,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     Colors.orange,
                   ),
                 ),
-                SizedBox(width: 12),
+                const SizedBox(width: 12),
                 Expanded(
                   child: _buildStatCard(
                     'Sincronizações',
@@ -428,7 +433,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _buildStatCard(String title, String value, IconData icon, Color color) {
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(8),
@@ -437,7 +442,7 @@ class _ProfilePageState extends State<ProfilePage> {
       child: Column(
         children: [
           Icon(icon, color: color, size: 24),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Text(
             value,
             style: TextStyle(
@@ -446,7 +451,7 @@ class _ProfilePageState extends State<ProfilePage> {
               color: color,
             ),
           ),
-          SizedBox(height: 4),
+          const SizedBox(height: 4),
           Text(
             title,
             style: TextStyle(
@@ -486,7 +491,7 @@ class _ProfilePageState extends State<ProfilePage> {
         _isEditing = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Perfil atualizado com sucesso!'),
           backgroundColor: Colors.green,
         ),
@@ -529,7 +534,7 @@ class _ProfilePageState extends State<ProfilePage> {
       _newPasswordController.clear();
       _confirmPasswordController.clear();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Senha alterada com sucesso!'),
           backgroundColor: Colors.green,
         ),
@@ -542,6 +547,44 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
       );
     }
+  }
+
+  Widget _buildAdminSettings() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Configurações Administrativas',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ListTile(
+              leading: const Icon(
+                Icons.delete_outline,
+                color: Colors.red,
+              ),
+              title: const Text('Itens Excluídos'),
+              subtitle: const Text('Visualizar e restaurar itens excluídos'),
+              trailing: const Icon(Icons.arrow_forward_ios),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const DeletedItemsPage(),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   String _formatDate(DateTime date) {

@@ -89,7 +89,7 @@ class NotificationProvider extends ChangeNotifier {
       if (!_isInitialized) return;
 
       final id = recurringTransaction.id ?? 0;
-      final title = 'Transação Recorrente';
+      const title = 'Transação Recorrente';
       final body = '${recurringTransaction.category}: R\$ ${recurringTransaction.value.toStringAsFixed(2)}';
       
       // Calcular próxima data
@@ -101,7 +101,7 @@ class NotificationProvider extends ChangeNotifier {
           title,
           body,
           _convertToTZDateTime(nextDate),
-          NotificationDetails(
+          const NotificationDetails(
             android: AndroidNotificationDetails(
               'recurring_transactions',
               'Transações Recorrentes',
@@ -110,7 +110,7 @@ class NotificationProvider extends ChangeNotifier {
               priority: Priority.high,
               icon: '@mipmap/ic_launcher',
             ),
-            iOS: const DarwinNotificationDetails(
+            iOS: DarwinNotificationDetails(
               presentAlert: true,
               presentBadge: true,
               presentSound: true,
@@ -133,7 +133,7 @@ class NotificationProvider extends ChangeNotifier {
       if (!_isInitialized) return;
 
       final id = 1000 + month.month; // ID único para cada mês
-      final title = 'Resumo Mensal';
+      const title = 'Resumo Mensal';
       final body = 'Confira seu resumo financeiro de ${_formatMonth(month)}';
       
       // Agendar para o primeiro dia do próximo mês às 9h
@@ -144,7 +144,7 @@ class NotificationProvider extends ChangeNotifier {
         title,
         body,
         _convertToTZDateTime(nextMonth),
-        NotificationDetails(
+        const NotificationDetails(
           android: AndroidNotificationDetails(
             'monthly_summary',
             'Resumo Mensal',
@@ -153,7 +153,7 @@ class NotificationProvider extends ChangeNotifier {
             priority: Priority.high,
             icon: '@mipmap/ic_launcher',
           ),
-          iOS: const DarwinNotificationDetails(
+          iOS: DarwinNotificationDetails(
             presentAlert: true,
             presentBadge: true,
             presentSound: true,
@@ -189,7 +189,7 @@ class NotificationProvider extends ChangeNotifier {
         title,
         body,
         _convertToTZDateTime(reminderDate),
-        NotificationDetails(
+        const NotificationDetails(
           android: AndroidNotificationDetails(
             'payment_reminders',
             'Lembretes de Pagamento',
@@ -198,7 +198,7 @@ class NotificationProvider extends ChangeNotifier {
             priority: Priority.high,
             icon: '@mipmap/ic_launcher',
           ),
-          iOS: const DarwinNotificationDetails(
+          iOS: DarwinNotificationDetails(
             presentAlert: true,
             presentBadge: true,
             presentSound: true,
@@ -227,7 +227,7 @@ class NotificationProvider extends ChangeNotifier {
         DateTime.now().millisecondsSinceEpoch % 100000,
         title,
         body,
-        NotificationDetails(
+        const NotificationDetails(
           android: AndroidNotificationDetails(
             'immediate',
             'Notificações Imediatas',
@@ -236,7 +236,7 @@ class NotificationProvider extends ChangeNotifier {
             priority: Priority.high,
             icon: '@mipmap/ic_launcher',
           ),
-          iOS: const DarwinNotificationDetails(
+          iOS: DarwinNotificationDetails(
             presentAlert: true,
             presentBadge: true,
             presentSound: true,

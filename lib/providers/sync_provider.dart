@@ -179,7 +179,7 @@ class SyncProvider extends ChangeNotifier {
         _syncStatus = 'Firebase não disponível';
         
         // Fallback: simular sincronização bem-sucedida
-        await Future.delayed(Duration(seconds: 2)); // Simular tempo de sincronização
+        await Future.delayed(const Duration(seconds: 2)); // Simular tempo de sincronização
         
         _lastSyncTime = DateTime.now();
         _syncCount++;

@@ -18,6 +18,7 @@ class Transaction {
   final int userId;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final DateTime? deletedAt;
 
   Transaction({
     this.id,
@@ -34,6 +35,7 @@ class Transaction {
     required this.userId,
     required this.createdAt,
     required this.updatedAt,
+    this.deletedAt,
   });
 
   factory Transaction.fromJson(Map<String, dynamic> json) {
@@ -69,6 +71,9 @@ class Transaction {
       updatedAt: json['atualizado_em'] is String 
         ? DateTime.parse(json['atualizado_em'])
         : DateTime.now(),
+      deletedAt: json['excluido_em'] != null 
+        ? DateTime.parse(json['excluido_em'])
+        : null,
     );
   }
 
@@ -88,6 +93,7 @@ class Transaction {
       'usuario_id': userId,
       'criado_em': createdAt.toIso8601String(),
       'atualizado_em': updatedAt.toIso8601String(),
+      'excluido_em': deletedAt?.toIso8601String(),
     };
   }
 
@@ -109,6 +115,7 @@ class Transaction {
       'userId': userId,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
+      'deletedAt': deletedAt,
     };
   }
 
@@ -139,6 +146,9 @@ class Transaction {
       userId: data['userId'] ?? 1,
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       updatedAt: (data['updatedAt'] as Timestamp).toDate(),
+      deletedAt: data['deletedAt'] != null 
+        ? (data['deletedAt'] as Timestamp).toDate()
+        : null,
     );
   }
 
@@ -157,6 +167,7 @@ class Transaction {
     int? userId,
     DateTime? createdAt,
     DateTime? updatedAt,
+    DateTime? deletedAt,
   }) {
     return Transaction(
       id: id ?? this.id,
@@ -173,6 +184,7 @@ class Transaction {
       userId: userId ?? this.userId,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 
@@ -211,7 +223,7 @@ class Transaction {
 
   String get displayDate {
     final hoje = DateTime.now();
-    final ontem = hoje.subtract(Duration(days: 1));
+    final ontem = hoje.subtract(const Duration(days: 1));
     
     if (date.year == hoje.year && date.month == hoje.month && date.day == hoje.day) {
       return 'Hoje';
@@ -230,6 +242,8 @@ class Transaction {
   bool get hasConflict => syncStatus == 'conflict';
   bool get isRecurring => recurringTransactionId != null;
   bool get isUnpaid => !isPaid;
+  bool get isDeleted => deletedAt != null;
+  bool get isActive => deletedAt == null;
   
   String get paidDateFormatted {
     if (paidDate == null) return '';
@@ -238,7 +252,7 @@ class Transaction {
   
   String get paymentStatus {
     if (isPaid) {
-      return paidDate != null ? 'Pago em ${paidDateFormatted}' : 'Pago';
+      return paidDate != null ? 'Pago em $paidDateFormatted' : 'Pago';
     }
     return 'Pendente';
   }

@@ -22,14 +22,14 @@ class TransactionLoader extends StatefulWidget {
   final Duration animationDuration;
 
   const TransactionLoader({
-    Key? key,
+    super.key,
     this.message = "Processando sua transação...",
     this.size = 80.0,
     this.showPulseEffect = true,
     this.primaryColor,
     this.secondaryColor,
     this.animationDuration = const Duration(milliseconds: 2000),
-  }) : super(key: key);
+  });
 
   @override
   State<TransactionLoader> createState() => _TransactionLoaderState();
@@ -332,7 +332,7 @@ class _TransactionLoaderPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
     
     // Draw the main arc
-    final startAngle = -math.pi / 2;
+    const startAngle = -math.pi / 2;
     final sweepAngle = 2 * math.pi * progress;
     
     canvas.drawArc(
@@ -400,9 +400,9 @@ class _AnimatedDots extends StatefulWidget {
   final Color color;
 
   const _AnimatedDots({
-    Key? key,
+    super.key,
     required this.color,
-  }) : super(key: key);
+  });
 
   @override
   State<_AnimatedDots> createState() => _AnimatedDotsState();
@@ -483,11 +483,11 @@ class CompactTransactionLoader extends StatelessWidget {
   final Color? color;
 
   const CompactTransactionLoader({
-    Key? key,
+    super.key,
     this.message = "Processando...",
     this.size = 40.0,
     this.color,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

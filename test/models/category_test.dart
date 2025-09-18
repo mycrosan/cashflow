@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../lib/models/category.dart';
+import 'package:fluxo_caixa_familiar/models/category.dart';
 
 void main() {
   group('Category Model Tests', () {

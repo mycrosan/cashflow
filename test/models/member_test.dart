@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../lib/models/member.dart';
+import 'package:fluxo_caixa_familiar/models/member.dart';
 
 void main() {
   group('Member Model Tests', () {

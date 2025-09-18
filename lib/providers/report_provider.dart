@@ -28,10 +28,10 @@ class ReportProvider extends ChangeNotifier {
   double _totalExpense = 0.0;
   double _balance = 0.0;
   List<Transaction> _monthlyTransactions = [];
-  Map<String, double> _expensesByCategory = {};
-  Map<String, double> _incomeByCategory = {};
-  Map<String, double> _expensesByMember = {};
-  Map<String, double> _incomeByMember = {};
+  final Map<String, double> _expensesByCategory = {};
+  final Map<String, double> _incomeByCategory = {};
+  final Map<String, double> _expensesByMember = {};
+  final Map<String, double> _incomeByMember = {};
 
   double get totalIncome => _totalIncome;
   double get totalExpense => _totalExpense;
@@ -120,7 +120,7 @@ class ReportProvider extends ChangeNotifier {
       // Calcular dados por membro
       _calculateDataByMember();
       
-      print('Totais calculados: Receitas=${_totalIncome}, Despesas=${_totalExpense}, Saldo=${_balance}');
+      print('Totais calculados: Receitas=$_totalIncome, Despesas=$_totalExpense, Saldo=$_balance');
 
       _isLoading = false;
       notifyListeners();
@@ -175,7 +175,7 @@ class ReportProvider extends ChangeNotifier {
       // Calcular dados por membro
       _calculateDataByMember();
       
-      print('Totais calculados: Receitas=${_totalIncome}, Despesas=${_totalExpense}, Saldo=${_balance}');
+      print('Totais calculados: Receitas=$_totalIncome, Despesas=$_totalExpense, Saldo=$_balance');
 
       _isLoading = false;
       notifyListeners();

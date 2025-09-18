@@ -4,7 +4,7 @@ import '../../widgets/transaction_loader.dart';
 /// Página de demonstração do widget TransactionLoader com diferentes configurações
 /// Esta página demonstra as animações premium de carregamento para telas de transação
 class TransactionLoaderDemo extends StatefulWidget {
-  const TransactionLoaderDemo({Key? key}) : super(key: key);
+  const TransactionLoaderDemo({super.key});
 
   @override
   State<TransactionLoaderDemo> createState() => _TransactionLoaderDemoState();
@@ -31,9 +31,9 @@ class _TransactionLoaderDemoState extends State<TransactionLoaderDemo> {
             onPressed: () {
               // Alternar tema (isso precisaria ser implementado no seu app)
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
+                const SnackBar(
                   content: Text('Alternância de tema seria implementada aqui'),
-                  duration: const Duration(seconds: 2),
+                  duration: Duration(seconds: 2),
                 ),
               );
             },
@@ -83,7 +83,7 @@ class _TransactionLoaderDemoState extends State<TransactionLoaderDemo> {
               isActive: _showLoader1,
               onToggle: () => setState(() => _showLoader1 = !_showLoader1),
               child: _showLoader1
-                  ? TransactionLoader(
+                  ? const TransactionLoader(
                       message: "Processando sua transação...",
                       size: 100.0,
                     )
@@ -118,11 +118,11 @@ class _TransactionLoaderDemoState extends State<TransactionLoaderDemo> {
               isActive: _showLoader2,
               onToggle: () => setState(() => _showLoader2 = !_showLoader2),
               child: _showLoader2
-                  ? TransactionLoader(
+                  ? const TransactionLoader(
                       message: "Salvando dados da transação...",
                       size: 90.0,
-                      primaryColor: const Color(0xFF8B5CF6),
-                      secondaryColor: const Color(0xFFEC4899),
+                      primaryColor: Color(0xFF8B5CF6),
+                      secondaryColor: Color(0xFFEC4899),
                     )
                   : Container(
                       height: 200,
@@ -155,12 +155,12 @@ class _TransactionLoaderDemoState extends State<TransactionLoaderDemo> {
               isActive: _showLoader3,
               onToggle: () => setState(() => _showLoader3 = !_showLoader3),
               child: _showLoader3
-                  ? TransactionLoader(
+                  ? const TransactionLoader(
                       message: "Atualizando transação...",
                       size: 80.0,
                       showPulseEffect: false,
-                      primaryColor: const Color(0xFF10B981),
-                      secondaryColor: const Color(0xFF059669),
+                      primaryColor: Color(0xFF10B981),
+                      secondaryColor: Color(0xFF059669),
                     )
                   : Container(
                       height: 200,
@@ -193,9 +193,9 @@ class _TransactionLoaderDemoState extends State<TransactionLoaderDemo> {
               isActive: _showCompactLoader,
               onToggle: () => setState(() => _showCompactLoader = !_showCompactLoader),
               child: _showCompactLoader
-                  ? Container(
+                  ? SizedBox(
                       height: 60,
-                      child: Center(
+                      child: const Center(
                         child: CompactTransactionLoader(
                           message: "Carregando...",
                           size: 20.0,

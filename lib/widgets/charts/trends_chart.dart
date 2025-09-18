@@ -10,13 +10,13 @@ class TrendsChart extends StatefulWidget {
   final bool showBalance;
 
   const TrendsChart({
-    Key? key,
+    super.key,
     required this.trends,
     required this.selectedPeriod,
     this.showIncome = true,
     this.showExpense = true,
     this.showBalance = true,
-  }) : super(key: key);
+  });
 
   @override
   State<TrendsChart> createState() => _TrendsChartState();
@@ -27,7 +27,7 @@ class _TrendsChartState extends State<TrendsChart> {
   @override
   Widget build(BuildContext context) {
     if (widget.trends.isEmpty) {
-      return Container(
+      return SizedBox(
         height: 300,
         child: Center(
           child: Text(
@@ -66,10 +66,10 @@ class _TrendsChartState extends State<TrendsChart> {
           ),
           titlesData: FlTitlesData(
             show: true,
-            rightTitles: AxisTitles(
+            rightTitles: const AxisTitles(
               sideTitles: SideTitles(showTitles: false),
             ),
-            topTitles: AxisTitles(
+            topTitles: const AxisTitles(
               sideTitles: SideTitles(showTitles: false),
             ),
             bottomTitles: AxisTitles(
@@ -91,7 +91,7 @@ class _TrendsChartState extends State<TrendsChart> {
                       ),
                     );
                   }
-                  return Text('');
+                  return const Text('');
                 },
               ),
             ),
@@ -134,7 +134,7 @@ class _TrendsChartState extends State<TrendsChart> {
                     '${widget.showIncome ? 'Receita: ${_formatCurrency(trend.income)}\n' : ''}'
                     '${widget.showExpense ? 'Despesa: ${_formatCurrency(trend.expense)}\n' : ''}'
                     '${widget.showBalance ? 'Saldo: ${_formatCurrency(trend.balance)}' : ''}',
-                    TextStyle(
+                    const TextStyle(
                       color: Colors.white,
                       fontSize: 12,
                     ),
@@ -146,7 +146,7 @@ class _TrendsChartState extends State<TrendsChart> {
             getTouchedSpotIndicator: (barData, spotIndexes) {
               return spotIndexes.map((spotIndex) {
                 return TouchedSpotIndicatorData(
-                  FlLine(
+                  const FlLine(
                     color: Colors.blue,
                     strokeWidth: 2,
                   ),

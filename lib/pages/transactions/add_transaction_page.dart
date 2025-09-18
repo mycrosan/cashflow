@@ -1,4 +1,4 @@
- import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -12,7 +12,9 @@ import '../../providers/member_provider.dart';
 import '../../providers/recurring_transaction_provider.dart';
 import '../../providers/report_provider.dart';
 import '../../providers/quick_entry_provider.dart';
+import '../../providers/receipt_provider.dart';
 import '../../widgets/transaction_loader.dart';
+import '../../screens/receipt_scanner_screen.dart';
 
 // Enum para tipo de transação
 enum TransactionType { income, expense }
@@ -26,11 +28,11 @@ class AddTransactionPage extends StatefulWidget {
   final TransactionType? initialTransactionType;
 
   const AddTransactionPage({
-    Key? key,
+    super.key,
     this.transactionToEdit,
     this.recurringTransactionToEdit,
     this.initialTransactionType,
-  }) : super(key: key);
+  });
 
   @override
   State<AddTransactionPage> createState() => _AddTransactionPageState();
@@ -252,7 +254,7 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
           SnackBar(
             content: Text('$tipoTransacao salva com sucesso! ($tipoValor)'),
             backgroundColor: Colors.green,
-            duration: Duration(seconds: 2),
+            duration: const Duration(seconds: 2),
             action: SnackBarAction(
               label: 'Ver',
               textColor: Colors.white,
@@ -267,7 +269,7 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
         await _updateHomeData();
         
         // Aguardar um pouco antes de fechar
-        await Future.delayed(Duration(milliseconds: 500));
+        await Future.delayed(const Duration(milliseconds: 500));
         
         if (mounted) {
           Navigator.of(context).pop(true);
@@ -439,6 +441,88 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
     }
   }
 
+  /// Abre a tela de scanner de nota fiscal
+  Future<void> _openReceiptScanner() async {
+    try {
+      // Navega para a tela de scanner de nota fiscal
+      final result = await Navigator.push<Map<String, dynamic>>(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const ReceiptScannerScreen(returnDataOnly: true),
+        ),
+      );
+
+      // Se retornou dados do cupom processado, preenche os campos automaticamente
+      if (result != null && mounted) {
+        await _fillFieldsFromReceipt(result);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao abrir scanner: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Preenche os campos da transação com dados do cupom fiscal
+  Future<void> _fillFieldsFromReceipt(Map<String, dynamic> receiptData) async {
+    try {
+      // Preenche o valor (sempre negativo para despesas)
+      if (receiptData['totalAmount'] != null) {
+        final amount = receiptData['totalAmount'] as double;
+        _valueController.text = _currencyFormatter.format(amount.abs());
+        _selectedType = TransactionType.expense;
+      }
+
+      // Preenche a data
+      if (receiptData['date'] != null) {
+        _selectedDate = receiptData['date'] as DateTime;
+      }
+
+      // Preenche as notas com informações do estabelecimento
+      if (receiptData['establishmentName'] != null) {
+        final establishment = receiptData['establishmentName'] as String;
+        final itemCount = receiptData['itemCount'] as int? ?? 0;
+        _notesController.text = 'Compra em $establishment${itemCount > 0 ? ' - $itemCount itens' : ''}';
+      }
+
+      // Tenta definir categoria como "Compras" se existir
+       _loadData();
+       final categories = context.read<CategoryProvider>().categories;
+      final shoppingCategory = categories.firstWhere(
+        (cat) => cat.name.toLowerCase().contains('compra') || 
+                 cat.name.toLowerCase().contains('mercado') ||
+                 cat.name.toLowerCase().contains('alimentação'),
+        orElse: () => categories.isNotEmpty ? categories.first : throw Exception('Nenhuma categoria encontrada'),
+      );
+      _selectedCategory = shoppingCategory;
+
+      setState(() {});
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Dados do cupom fiscal carregados com sucesso!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao carregar dados do cupom: $e'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.transactionToEdit != null || widget.recurringTransactionToEdit != null;
@@ -449,9 +533,17 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
       appBar: AppBar(
         title: Text(pageTitle),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        actions: [
+          // Ícone para abrir o leitor de nota fiscal
+          IconButton(
+            onPressed: _openReceiptScanner,
+            icon: const Icon(Icons.camera_alt),
+            tooltip: 'Escanear Nota Fiscal',
+          ),
+        ],
       ),
       body: _isLoading
-          ? TransactionLoader(
+          ? const TransactionLoader(
               message: "Salvando sua transação...",
               size: 100.0,
             )
@@ -597,9 +689,9 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
             FilteringTextInputFormatter.digitsOnly,
             _CurrencyInputFormatter(),
           ],
-          decoration: InputDecoration(
-            border: const OutlineInputBorder(),
-            prefixIcon: const Icon(Icons.attach_money),
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(),
+            prefixIcon: Icon(Icons.attach_money),
             hintText: 'R\$ 0,00',
           ),
           validator: (value) {
