@@ -714,7 +714,7 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Descrição',
+          'Descrição (opcional)',
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
@@ -725,12 +725,7 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
             prefixIcon: Icon(Icons.description),
             hintText: 'Ex: Conta de luz, Salário, etc.',
           ),
-          validator: (value) {
-            if (value == null || value.trim().isEmpty) {
-              return 'Digite uma descrição';
-            }
-            return null;
-          },
+          // Removido o validator para tornar o campo opcional
         ),
       ],
     );

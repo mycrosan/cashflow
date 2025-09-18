@@ -84,9 +84,31 @@ dev_dependencies:
   
   # Coverage
   coverage: ^1.7.2
+  
+  # Icon Generation
+  flutter_launcher_icons: ^0.13.1
 
 dependency_overrides:
   web: ^1.0.0
 
 flutter:
   uses-material-design: true
+
+# Configuração dos ícones do app
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icon/app_icon.png"
+  min_sdk_android: 21
+  web:
+    generate: true
+    image_path: "assets/icon/app_icon.png"
+    background_color: "#3F51B5"
+    theme_color: "#3F51B5"
+  windows:
+    generate: true
+    image_path: "assets/icon/app_icon.png"
+    icon_size: 48
+  macos:
+    generate: true
+    image_path: "assets/icon/app_icon.png"
