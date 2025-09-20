@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'dart:math' as math;
 import '../pages/transactions/add_transaction_page.dart';
 import '../providers/floating_button_provider.dart';
+import '../providers/transaction_preference_provider.dart';
 
 class DraggableFAB extends StatefulWidget {
   final VoidCallback? onPressed;
@@ -104,142 +105,20 @@ class _DraggableFABState extends State<DraggableFAB> with TickerProviderStateMix
     _scaleController.reverse();
   }
 
-  void _showTransactionOptions() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (context) => Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).scaffoldBackgroundColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 20,
-              offset: const Offset(0, -5),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Handle
-                Container(
-                  width: 36,
-                  height: 5,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(2.5),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  'Adicionar Transação',
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 22,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildAppleStyleOptionButton(
-                        'Receita',
-                        Icons.add_circle_outline,
-                        Colors.green,
-                        () {
-                          Navigator.pop(context);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const AddTransactionPage(
-                                initialTransactionType: TransactionType.income,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _buildAppleStyleOptionButton(
-                        'Despesa',
-                        Icons.remove_circle_outline,
-                        Colors.red,
-                        () {
-                          Navigator.pop(context);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const AddTransactionPage(
-                                initialTransactionType: TransactionType.expense,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-              ],
-            ),
-          ),
+  void _navigateToAddTransaction() {
+    final transactionPreferenceProvider = Provider.of<TransactionPreferenceProvider>(context, listen: false);
+    
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddTransactionPage(
+          initialTransactionType: transactionPreferenceProvider.lastTransactionType,
         ),
       ),
     );
   }
 
-  Widget _buildAppleStyleOptionButton(String label, IconData icon, Color color, VoidCallback onPressed) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.08),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: color.withOpacity(0.2),
-              width: 1,
-            ),
-          ),
-          child: Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  icon,
-                  size: 24,
-                  color: color,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: color,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -321,7 +200,7 @@ class _DraggableFABState extends State<DraggableFAB> with TickerProviderStateMix
                           child: Material(
                             color: Colors.transparent,
                             child: InkWell(
-                              onTap: widget.onPressed ?? _showTransactionOptions,
+                              onTap: widget.onPressed ?? _navigateToAddTransaction,
                               borderRadius: BorderRadius.circular(30),
                               child: Center(
                                 child: Icon(

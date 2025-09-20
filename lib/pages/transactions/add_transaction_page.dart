@@ -10,6 +10,7 @@ import '../../providers/transaction_provider.dart';
 import '../../providers/category_provider.dart';
 import '../../providers/member_provider.dart';
 import '../../providers/recurring_transaction_provider.dart';
+import '../../providers/transaction_preference_provider.dart';
 import '../../providers/report_provider.dart';
 import '../../providers/quick_entry_provider.dart';
 import '../../providers/receipt_provider.dart';
@@ -43,19 +44,20 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
   final _valueController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _notesController = TextEditingController();
-  
+  final _tagsController = TextEditingController();
+
   TransactionType _selectedType = TransactionType.expense;
   Category? _selectedCategory;
   Member? _selectedMember;
   DateTime _selectedDate = DateTime.now();
-  
+
   // Campos de recorrência
   bool _isRecurring = false;
   RecurrenceType _recurrenceType = RecurrenceType.monthly;
   int _interval = 1;
   DateTime? _endDate;
   int? _maxOccurrences;
-  
+
   // Controladores para máscara de valor
   final _valueFocusNode = FocusNode();
   final _currencyFormatter = NumberFormat.currency(
@@ -63,7 +65,7 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
     symbol: 'R\$ ',
     decimalDigits: 2,
   );
-  
+
   // Loading state
   bool _isLoading = false;
 
@@ -78,6 +80,7 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
     _valueController.dispose();
     _descriptionController.dispose();
     _notesController.dispose();
+    _tagsController.dispose();
     _valueFocusNode.dispose();
     super.dispose();
   }
@@ -87,14 +90,59 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
       _loadTransactionData();
     } else if (widget.recurringTransactionToEdit != null) {
       _loadRecurringTransactionData();
-    } else if (widget.initialTransactionType != null) {
-      // Definir tipo inicial se fornecido
-      _selectedType = widget.initialTransactionType!;
+    } else {
+      // Carregar os últimos valores selecionados
+      _loadLastSelectedValues();
     }
-    
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadData();
     });
+  }
+
+  void _loadLastSelectedValues() {
+    final transactionPreferenceProvider =
+        context.read<TransactionPreferenceProvider>();
+    final categoryProvider = context.read<CategoryProvider>();
+    final memberProvider = context.read<MemberProvider>();
+
+    // Carregar último tipo de transação
+    if (widget.initialTransactionType != null) {
+      _selectedType = widget.initialTransactionType!;
+    } else {
+      final lastType = transactionPreferenceProvider.lastTransactionType;
+      if (lastType != null) {
+        _selectedType = lastType == 'income'
+            ? TransactionType.income
+            : TransactionType.expense;
+      }
+    }
+
+    // Carregar última categoria
+    final lastCategoryName = transactionPreferenceProvider.lastCategoryName;
+    if (lastCategoryName != null && categoryProvider.categories.isNotEmpty) {
+      final matchingCategories = categoryProvider.categories
+          .where((cat) =>
+              cat.type == _getTypeString(_selectedType) &&
+              cat.name == lastCategoryName)
+          .toList();
+
+      if (matchingCategories.isNotEmpty) {
+        _selectedCategory = matchingCategories.first;
+      }
+    }
+
+    // Carregar último membro
+    final lastMemberId = transactionPreferenceProvider.lastMemberId;
+    if (lastMemberId != null && memberProvider.members.isNotEmpty) {
+      final matchingMembers = memberProvider.members
+          .where((member) => member.id == lastMemberId)
+          .toList();
+
+      if (matchingMembers.isNotEmpty) {
+        _selectedMember = matchingMembers.first;
+      }
+    }
   }
 
   void _loadTransactionData() {
@@ -139,13 +187,16 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
         updatedAt: DateTime.now(),
       ),
     );
-    return category.type == 'income' ? TransactionType.income : TransactionType.expense;
+    return category.type == 'income'
+        ? TransactionType.income
+        : TransactionType.expense;
   }
 
   Category? _findCategoryByName(String categoryName) {
     final categoryProvider = context.read<CategoryProvider>();
     try {
-      return categoryProvider.categories.firstWhere((cat) => cat.name == categoryName);
+      return categoryProvider.categories
+          .firstWhere((cat) => cat.name == categoryName);
     } catch (e) {
       return null;
     }
@@ -182,11 +233,11 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
   void _loadData() async {
     final categoryProvider = context.read<CategoryProvider>();
     final memberProvider = context.read<MemberProvider>();
-    
+
     // Carregar dados sequencialmente para evitar condições de corrida
     await categoryProvider.loadCategories();
     await memberProvider.loadMembers();
-    
+
     if (mounted) {
       setState(() {});
     }
@@ -196,10 +247,16 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
     setState(() {
       _selectedType = type;
       // Limpar categoria se mudar o tipo
-      if (_selectedCategory != null && _selectedCategory!.type != _getTypeString(type)) {
+      if (_selectedCategory != null &&
+          _selectedCategory!.type != _getTypeString(type)) {
         _selectedCategory = null;
       }
     });
+
+    // Salvar a escolha do usuário
+    final transactionPreferenceProvider =
+        context.read<TransactionPreferenceProvider>();
+    transactionPreferenceProvider.saveLastTransactionType(type);
   }
 
   String _getTypeString(TransactionType type) {
@@ -213,9 +270,10 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
         .replaceAll('.', '')
         .replaceAll(',', '.');
     final value = double.tryParse(cleanValue) ?? 0.0;
-    
+
     // Aplicar sinal baseado no tipo de transação
-    final finalValue = _selectedType == TransactionType.expense ? -value.abs() : value.abs();
+    final finalValue =
+        _selectedType == TransactionType.expense ? -value.abs() : value.abs();
     return finalValue.toString();
   }
 
@@ -244,12 +302,14 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
       } else {
         await _saveTransaction();
       }
-      
+
       if (mounted) {
         // Mostrar mensagem de sucesso
-        final tipoTransacao = _isRecurring ? 'Transação Recorrente' : 'Transação';
-        final tipoValor = _selectedType == TransactionType.income ? 'Receita' : 'Despesa';
-        
+        final tipoTransacao =
+            _isRecurring ? 'Transação Recorrente' : 'Transação';
+        final tipoValor =
+            _selectedType == TransactionType.income ? 'Receita' : 'Despesa';
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('$tipoTransacao salva com sucesso! ($tipoValor)'),
@@ -264,13 +324,13 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
             ),
           ),
         );
-        
+
         // Atualizar dados da tela inicial
         await _updateHomeData();
-        
+
         // Aguardar um pouco antes de fechar
         await Future.delayed(const Duration(milliseconds: 500));
-        
+
         if (mounted) {
           Navigator.of(context).pop(true);
         }
@@ -296,23 +356,23 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
   Future<void> _updateHomeData() async {
     try {
       print('=== ATUALIZANDO DADOS DA TELA INICIAL (ADD TRANSACTION) ===');
-      
+
       final transactionProvider = context.read<TransactionProvider>();
       final reportProvider = context.read<ReportProvider>();
       final quickEntryProvider = context.read<QuickEntryProvider>();
-      
+
       // Se foi uma transação recorrente, também atualizar o provider de recorrências
       if (_isRecurring) {
         final recurringProvider = context.read<RecurringTransactionProvider>();
         await recurringProvider.loadRecurringTransactions();
         print('=== ADD TRANSACTION: Provider de recorrências atualizado ===');
       }
-      
+
       // Atualizar dados sequencialmente para evitar condições de corrida
       await transactionProvider.loadAllTransactions();
       await reportProvider.generateMonthlyReport(DateTime.now());
       await quickEntryProvider.loadRecentTransactions();
-      
+
       print('Dados da tela inicial atualizados com sucesso (ADD TRANSACTION)');
     } catch (e) {
       print('Erro ao atualizar dados da tela inicial (ADD TRANSACTION): $e');
@@ -321,18 +381,23 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
 
   Future<void> _saveTransaction() async {
     final transactionProvider = context.read<TransactionProvider>();
-    
+
     if (widget.transactionToEdit != null) {
       // Atualizar transação existente
       final updatedTransaction = widget.transactionToEdit!.copyWith(
         value: double.parse(_getTransactionValue()),
-        notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+        notes: _notesController.text.trim().isEmpty
+            ? null
+            : _notesController.text.trim(),
+        tags: _tagsController.text.trim().isEmpty
+            ? null
+            : _tagsController.text.trim().split(',').map((tag) => tag.trim()).toList(),
         category: _selectedCategory!.name,
         associatedMember: _selectedMember!,
         date: _selectedDate,
         updatedAt: DateTime.now(),
       );
-      
+
       await transactionProvider.updateTransaction(updatedTransaction);
     } else {
       // Criar nova transação
@@ -342,31 +407,41 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
         date: _selectedDate,
         category: _selectedCategory!.name,
         associatedMember: _selectedMember!,
-        notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+        notes: _notesController.text.trim().isEmpty
+            ? null
+            : _notesController.text.trim(),
+        tags: _tagsController.text.trim().isEmpty
+            ? null
+            : _tagsController.text.trim().split(',').map((tag) => tag.trim()).toList(),
         userId: 1, // TODO: Pegar do usuário logado
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       );
-      
+
       await transactionProvider.addTransaction(newTransaction);
     }
   }
 
   Future<void> _saveRecurringTransaction() async {
-    print('=== ADD TRANSACTION PAGE: Iniciando salvamento de transação recorrente ===');
-    print('=== ADD TRANSACTION PAGE: recurringTransactionToEdit: ${widget.recurringTransactionToEdit?.id} ===');
-    
+    print(
+        '=== ADD TRANSACTION PAGE: Iniciando salvamento de transação recorrente ===');
+    print(
+        '=== ADD TRANSACTION PAGE: recurringTransactionToEdit: ${widget.recurringTransactionToEdit?.id} ===');
+
     final recurringProvider = context.read<RecurringTransactionProvider>();
-    
+
     if (widget.recurringTransactionToEdit != null) {
       print('=== ADD TRANSACTION PAGE: Modo de ATUALIZAÇÃO ===');
-      
+
       // Atualizar recorrência existente
       final updatedRecurring = widget.recurringTransactionToEdit!.copyWith(
         value: double.parse(_getTransactionValue()),
-        notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+        notes: _notesController.text.trim().isEmpty
+            ? null
+            : _notesController.text.trim(),
         category: _selectedCategory!.name,
-        associatedMember: widget.recurringTransactionToEdit!.associatedMember.copyWith(
+        associatedMember:
+            widget.recurringTransactionToEdit!.associatedMember.copyWith(
           id: _selectedMember!.id,
           updatedAt: DateTime.now(),
         ),
@@ -377,18 +452,20 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
         isActive: 1,
         updatedAt: DateTime.now(),
       );
-      
-      print('=== ADD TRANSACTION PAGE: Transação atualizada preparada: ${updatedRecurring.toJson()} ===');
-      
-      final result = await recurringProvider.updateRecurringTransaction(updatedRecurring);
+
+      print(
+          '=== ADD TRANSACTION PAGE: Transação atualizada preparada: ${updatedRecurring.toJson()} ===');
+
+      final result =
+          await recurringProvider.updateRecurringTransaction(updatedRecurring);
       print('=== ADD TRANSACTION PAGE: Resultado da atualização: $result ===');
-      
+
       if (!result) {
         throw Exception('Falha ao atualizar transação recorrente');
       }
     } else {
       print('=== ADD TRANSACTION PAGE: Modo de CRIAÇÃO ===');
-      
+
       // Criar nova recorrência
       final result = await recurringProvider.addRecurringTransaction(
         frequency: _getRecurrenceTypeString(_recurrenceType),
@@ -398,16 +475,18 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
         startDate: _selectedDate,
         endDate: _endDate,
         maxOccurrences: _maxOccurrences,
-        notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+        notes: _notesController.text.trim().isEmpty
+            ? null
+            : _notesController.text.trim(),
       );
-      
+
       print('=== ADD TRANSACTION PAGE: Resultado da criação: $result ===');
-      
+
       if (!result) {
         throw Exception('Falha ao criar transação recorrente');
       }
     }
-    
+
     print('=== ADD TRANSACTION PAGE: Salvamento concluído com sucesso ===');
   }
 
@@ -448,7 +527,8 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
       final result = await Navigator.push<Map<String, dynamic>>(
         context,
         MaterialPageRoute(
-          builder: (context) => const ReceiptScannerScreen(returnDataOnly: true),
+          builder: (context) =>
+              const ReceiptScannerScreen(returnDataOnly: true),
         ),
       );
 
@@ -487,17 +567,21 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
       if (receiptData['establishmentName'] != null) {
         final establishment = receiptData['establishmentName'] as String;
         final itemCount = receiptData['itemCount'] as int? ?? 0;
-        _notesController.text = 'Compra em $establishment${itemCount > 0 ? ' - $itemCount itens' : ''}';
+        _notesController.text =
+            'Compra em $establishment${itemCount > 0 ? ' - $itemCount itens' : ''}';
       }
 
       // Tenta definir categoria como "Compras" se existir
-       _loadData();
-       final categories = context.read<CategoryProvider>().categories;
+      _loadData();
+      final categories = context.read<CategoryProvider>().categories;
       final shoppingCategory = categories.firstWhere(
-        (cat) => cat.name.toLowerCase().contains('compra') || 
-                 cat.name.toLowerCase().contains('mercado') ||
-                 cat.name.toLowerCase().contains('alimentação'),
-        orElse: () => categories.isNotEmpty ? categories.first : throw Exception('Nenhuma categoria encontrada'),
+        (cat) =>
+            cat.name.toLowerCase().contains('compra') ||
+            cat.name.toLowerCase().contains('mercado') ||
+            cat.name.toLowerCase().contains('alimentação'),
+        orElse: () => categories.isNotEmpty
+            ? categories.first
+            : throw Exception('Nenhuma categoria encontrada'),
       );
       _selectedCategory = shoppingCategory;
 
@@ -525,7 +609,8 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isEditing = widget.transactionToEdit != null || widget.recurringTransactionToEdit != null;
+    final isEditing = widget.transactionToEdit != null ||
+        widget.recurringTransactionToEdit != null;
     final pageTitle = isEditing ? 'Editar Transação' : 'Nova Transação';
     final saveButtonText = isEditing ? 'Atualizar' : 'Salvar';
 
@@ -550,60 +635,62 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
           : Form(
               key: _formKey,
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(12.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     // Tipo de transação
                     _buildTypeSelector(),
-                    const SizedBox(height: 24),
-                    
+                    const SizedBox(height: 16),
+
                     // Valor
                     _buildValueField(),
-                    const SizedBox(height: 24),
-                    
-                    // Descrição
-                    _buildDescriptionField(),
-                    const SizedBox(height: 24),
-                    
+                    const SizedBox(height: 16),
+
                     // Categoria
                     _buildCategoryField(),
-                    const SizedBox(height: 24),
-                    
+                    const SizedBox(height: 16),
+
                     // Membro
                     _buildMemberField(),
-                    const SizedBox(height: 24),
-                    
+                    const SizedBox(height: 16),
+
                     // Data
                     _buildDateField(),
-                    const SizedBox(height: 24),
-                    
+                    const SizedBox(height: 16),
+
                     // Notas
                     _buildNotesField(),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 16),
                     
+                    // Tags
+                    _buildTagsField(),
+                    const SizedBox(height: 16),
+
                     // Opção de recorrência
                     _buildRecurrenceToggle(),
-                    
+
                     // Campos de recorrência
                     if (_isRecurring) ...[
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
                       _buildRecurrenceFields(),
                     ],
-                    
-                    const SizedBox(height: 32),
-                    
+
+                    const SizedBox(height: 24),
+
                     // Botão salvar
                     ElevatedButton(
                       onPressed: _isLoading ? null : _handleSave,
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         backgroundColor: Theme.of(context).colorScheme.primary,
-                        foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                        foregroundColor:
+                            Theme.of(context).colorScheme.onPrimary,
                       ),
                       child: Text(
                         saveButtonText,
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ],
@@ -614,34 +701,24 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
   }
 
   Widget _buildTypeSelector() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
       children: [
-        const Text(
-          'Tipo de Transação',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        Expanded(
+          child: _buildTypeButton(
+            TransactionType.income,
+            'Receita',
+            Icons.add_circle_outline,
+            Colors.green,
+          ),
         ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Expanded(
-              child: _buildTypeButton(
-                TransactionType.income,
-                'Receita',
-                Icons.add_circle_outline,
-                Colors.green,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: _buildTypeButton(
-                TransactionType.expense,
-                'Despesa',
-                Icons.remove_circle_outline,
-                Colors.red,
-              ),
-            ),
-          ],
+        const SizedBox(width: 8),
+        Expanded(
+          child: _buildTypeButton(
+            TransactionType.expense,
+            'Despesa',
+            Icons.remove_circle_outline,
+            Colors.red,
+          ),
         ),
       ],
     );
@@ -673,61 +750,50 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
   }
 
   Widget _buildValueField() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Valor',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 8),
-        TextFormField(
-          controller: _valueController,
-          focusNode: _valueFocusNode,
-          keyboardType: TextInputType.number,
-          inputFormatters: [
-            FilteringTextInputFormatter.digitsOnly,
-            _CurrencyInputFormatter(),
-          ],
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(),
-            prefixIcon: Icon(Icons.attach_money),
-            hintText: 'R\$ 0,00',
-          ),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Digite um valor';
-            }
-            final cleanValue = value.replaceAll('R\$ ', '').replaceAll('.', '').replaceAll(',', '.');
-            if (double.tryParse(cleanValue) == null || double.parse(cleanValue) <= 0) {
-              return 'Digite um valor válido';
-            }
-            return null;
-          },
-        ),
+    return TextFormField(
+      controller: _valueController,
+      focusNode: _valueFocusNode,
+      keyboardType: TextInputType.number,
+      inputFormatters: [
+        FilteringTextInputFormatter.digitsOnly,
+        _CurrencyInputFormatter(),
       ],
+      decoration: const InputDecoration(
+        border: OutlineInputBorder(),
+        prefixText: 'R\$ ',
+        prefixStyle: TextStyle(color: Colors.black, fontSize: 16),
+        hintText: '0,00',
+        labelText: 'Valor',
+        floatingLabelBehavior: FloatingLabelBehavior.auto,
+      ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Digite um valor';
+        }
+        final cleanValue = value
+            .replaceAll('R\$ ', '')
+            .replaceAll('.', '')
+            .replaceAll(',', '.');
+        if (double.tryParse(cleanValue) == null ||
+            double.parse(cleanValue) <= 0) {
+          return 'Digite um valor válido';
+        }
+        return null;
+      },
     );
   }
 
   Widget _buildDescriptionField() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Descrição (opcional)',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 8),
-        TextFormField(
-          controller: _descriptionController,
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(),
-            prefixIcon: Icon(Icons.description),
-            hintText: 'Ex: Conta de luz, Salário, etc.',
-          ),
-          // Removido o validator para tornar o campo opcional
-        ),
-      ],
+    return TextFormField(
+      controller: _descriptionController,
+      decoration: const InputDecoration(
+        border: OutlineInputBorder(),
+        prefixIcon: Icon(Icons.description),
+        hintText: 'Ex: Conta de luz, Salário, etc.',
+        labelText: 'Descrição (opcional)',
+        floatingLabelBehavior: FloatingLabelBehavior.auto,
+      ),
+      // Removido o validator para tornar o campo opcional
     );
   }
 
@@ -737,49 +803,52 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
         .where((cat) => cat.type == _getTypeString(_selectedType))
         .toList();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Categoria',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 8),
-        DropdownButtonFormField<Category>(
-          value: _selectedCategory,
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(),
-            prefixIcon: Icon(Icons.category),
-          ),
-          hint: const Text('Selecione uma categoria'),
-          items: categories.map((category) {
-            return DropdownMenuItem(
-              value: category,
-              child: Row(
-                children: [
-                  Icon(
-                    category.icon != null ? _getIconFromString(category.icon!) : Icons.category,
-                    color: category.color != null ? _getColorFromString(category.color!) : Colors.grey,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(category.name),
-                ],
+    return DropdownButtonFormField<Category>(
+      value: _selectedCategory,
+      decoration: const InputDecoration(
+        border: OutlineInputBorder(),
+        prefixIcon: Icon(Icons.category),
+        labelText: 'Categoria',
+        floatingLabelBehavior: FloatingLabelBehavior.auto,
+      ),
+      hint: const Text('Selecione uma categoria'),
+      items: categories.map((category) {
+        return DropdownMenuItem(
+          value: category,
+          child: Row(
+            children: [
+              Icon(
+                category.icon != null
+                    ? _getIconFromString(category.icon!)
+                    : Icons.category,
+                color: category.color != null
+                    ? _getColorFromString(category.color!)
+                    : Colors.grey,
               ),
-            );
-          }).toList(),
-          onChanged: (Category? newValue) {
-            setState(() {
-              _selectedCategory = newValue;
-            });
-          },
-          validator: (value) {
-            if (value == null) {
-              return 'Selecione uma categoria';
-            }
-            return null;
-          },
-        ),
-      ],
+              const SizedBox(width: 8),
+              Text(category.name),
+            ],
+          ),
+        );
+      }).toList(),
+      onChanged: (Category? newValue) {
+        setState(() {
+          _selectedCategory = newValue;
+        });
+
+        // Salvar a última categoria selecionada
+        if (newValue != null) {
+          final transactionPreferenceProvider =
+              context.read<TransactionPreferenceProvider>();
+          transactionPreferenceProvider.saveLastCategory(newValue.name);
+        }
+      },
+      validator: (value) {
+        if (value == null) {
+          return 'Selecione uma categoria';
+        }
+        return null;
+      },
     );
   }
 
@@ -822,56 +891,57 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
     final memberProvider = context.watch<MemberProvider>();
     final members = memberProvider.members;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Membro da Família',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 8),
-        DropdownButtonFormField<Member>(
-          value: _selectedMember,
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(),
-            prefixIcon: Icon(Icons.person),
-          ),
-          hint: const Text('Selecione um membro'),
-          items: members.map((member) {
-            return DropdownMenuItem(
-              value: member,
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 16,
-                    backgroundColor: _getMemberColor(member),
-                    child: Text(
-                      member.initials,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+    return DropdownButtonFormField<Member>(
+      value: _selectedMember,
+      decoration: const InputDecoration(
+        border: OutlineInputBorder(),
+        prefixIcon: Icon(Icons.person),
+        labelText: 'Membro da Família',
+        floatingLabelBehavior: FloatingLabelBehavior.auto,
+      ),
+      hint: const Text('Selecione um membro'),
+      items: members.map((member) {
+        return DropdownMenuItem(
+          value: member,
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 16,
+                backgroundColor: _getMemberColor(member),
+                child: Text(
+                  member.initials,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
                   ),
-                  const SizedBox(width: 8),
-                  Text(member.name),
-                ],
+                ),
               ),
-            );
-          }).toList(),
-          onChanged: (Member? newValue) {
-            setState(() {
-              _selectedMember = newValue;
-            });
-          },
-          validator: (value) {
-            if (value == null) {
-              return 'Selecione um membro';
-            }
-            return null;
-          },
-        ),
-      ],
+              const SizedBox(width: 8),
+              Text(member.name),
+            ],
+          ),
+        );
+      }).toList(),
+      onChanged: (Member? newValue) {
+        setState(() {
+          _selectedMember = newValue;
+        });
+
+        // Salvar o último membro selecionado
+        if (newValue != null) {
+          final transactionPreferenceProvider =
+              context.read<TransactionPreferenceProvider>();
+          if (newValue.id != null) {
+            transactionPreferenceProvider.saveLastMember(newValue.id!);
+          }
+        }
+      },
+      validator: (value) {
+        if (value == null) {
+          return 'Selecione um membro';
+        }
+        return null;
+      },
     );
   }
 
@@ -887,65 +957,59 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
       Colors.indigo,
       Colors.pink,
     ];
-    
+
     final index = member.name.hashCode % colors.length;
     return colors[index.abs()];
   }
 
   Widget _buildDateField() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Data',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+    return InkWell(
+      onTap: () => _selectDate(context),
+      child: InputDecorator(
+        decoration: const InputDecoration(
+          border: OutlineInputBorder(),
+          prefixIcon: Icon(Icons.calendar_today),
+          labelText: 'Data',
+          floatingLabelBehavior: FloatingLabelBehavior.auto,
         ),
-        const SizedBox(height: 8),
-        InkWell(
-          onTap: () => _selectDate(context),
-          child: InputDecorator(
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.calendar_today),
-            ),
-            child: Text(
-              DateFormat('dd/MM/yyyy').format(_selectedDate),
-              style: const TextStyle(fontSize: 16),
-            ),
-          ),
+        child: Text(
+          DateFormat('dd/MM/yyyy').format(_selectedDate),
+          style: const TextStyle(fontSize: 16),
         ),
-      ],
+      ),
     );
   }
 
   Widget _buildNotesField() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Observações (opcional)',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 8),
-        TextFormField(
-          controller: _notesController,
-          maxLines: 3,
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(),
-            prefixIcon: Icon(Icons.note),
-            hintText: 'Adicione observações se necessário...',
-          ),
-        ),
-      ],
+    return TextFormField(
+      controller: _notesController,
+      maxLines: 1,
+      decoration: const InputDecoration(
+        border: OutlineInputBorder(),
+        prefixIcon: Icon(Icons.note),
+        hintText: 'Adicione observações se necessário...',
+        labelText: 'Observações (opcional)',
+        floatingLabelBehavior: FloatingLabelBehavior.auto,
+      ),
+    );
+  }
+  
+  Widget _buildTagsField() {
+    return TextFormField(
+      controller: _tagsController,
+      maxLines: 1,
+      decoration: const InputDecoration(
+        border: OutlineInputBorder(),
+        prefixIcon: Icon(Icons.tag),
+        hintText: 'Adicione tags separadas por vírgula...',
+        labelText: 'Tags para relatórios (opcional)',
+        floatingLabelBehavior: FloatingLabelBehavior.auto,
+      ),
     );
   }
 
   Widget _buildRecurrenceToggle() {
     return SwitchListTile(
-      title: const Text(
-        'Transação Recorrente',
-        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-      ),
       subtitle: const Text('Marque se esta transação se repete'),
       value: _isRecurring,
       onChanged: (bool value) {
@@ -973,7 +1037,7 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            
+
             // Tipo de recorrência
             Row(
               children: [
@@ -1021,9 +1085,9 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Data de fim
             Row(
               children: [
@@ -1061,9 +1125,9 @@ class _AddTransactionPageState extends State<AddTransactionPage> {
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Número máximo de ocorrências
             TextFormField(
               initialValue: _maxOccurrences?.toString() ?? '',
@@ -1122,7 +1186,7 @@ class _CurrencyInputFormatter extends TextInputFormatter {
 
     // Remove tudo que não é dígito
     final digits = newValue.text.replaceAll(RegExp(r'[^\d]'), '');
-    
+
     if (digits.isEmpty) {
       return newValue.copyWith(text: '');
     }
@@ -1130,7 +1194,7 @@ class _CurrencyInputFormatter extends TextInputFormatter {
     // Converte para centavos
     final cents = int.parse(digits);
     final reais = cents / 100;
-    
+
     // Formata como moeda brasileira
     final formatted = NumberFormat.currency(
       locale: 'pt_BR',

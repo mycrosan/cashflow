@@ -18,6 +18,7 @@ import 'providers/sync_provider.dart';
 import 'providers/floating_button_provider.dart';
 import 'providers/financial_analysis_provider.dart';
 import 'providers/receipt_provider.dart';
+import 'providers/transaction_preference_provider.dart';
 import 'services/database_service.dart';
 import 'widgets/authentication_flow.dart';
 
@@ -59,6 +60,7 @@ class FluxoFamiliaApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => FloatingButtonProvider()),
         ChangeNotifierProvider(create: (_) => FinancialAnalysisProvider()),
         ChangeNotifierProvider(create: (_) => ReceiptProvider()),
+        ChangeNotifierProvider(create: (_) => TransactionPreferenceProvider()),
       ],
       child: Consumer<AuthProvider>(
         builder: (context, authProvider, child) {

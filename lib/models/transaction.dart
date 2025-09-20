@@ -10,6 +10,7 @@ class Transaction {
   final String category;
   final Member associatedMember;
   final String? notes;
+  final List<String>? tags;
   final String? receiptImage;
   final int? recurringTransactionId;
   final String syncStatus; // 'synced', 'pending', 'conflict'
@@ -27,6 +28,7 @@ class Transaction {
     required this.category,
     required this.associatedMember,
     this.notes,
+    this.tags,
     this.receiptImage,
     this.recurringTransactionId,
     this.syncStatus = 'synced',
@@ -158,6 +160,7 @@ class Transaction {
     String? category,
     Member? associatedMember,
     String? notes,
+    List<String>? tags,
     String? receiptImage,
     int? recurringTransactionId,
     String? syncStatus,
@@ -175,6 +178,7 @@ class Transaction {
       category: category ?? this.category,
       associatedMember: associatedMember ?? this.associatedMember,
       notes: notes ?? this.notes,
+      tags: tags ?? this.tags,
       receiptImage: receiptImage ?? this.receiptImage,
       recurringTransactionId: recurringTransactionId ?? this.recurringTransactionId,
       syncStatus: syncStatus ?? this.syncStatus,
