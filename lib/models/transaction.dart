@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+// import 'package:cloud_firestore/cloud_firestore.dart'; // Disabled for build fix
 import 'member.dart';
 
 class Transaction {
@@ -97,60 +97,59 @@ class Transaction {
     };
   }
 
-  /// Converte para formato Firestore
-  Map<String, dynamic> toFirestoreMap() {
-    return {
-      'id': id,
-      'value': value,
-      'date': date,
-      'category': category,
-      'memberId': associatedMember.id,
-      'memberName': associatedMember.name,
-      'notes': notes,
-      'receiptImage': receiptImage,
-      'recurringTransactionId': recurringTransactionId,
-      'syncStatus': syncStatus,
-      'isPaid': isPaid,
-      'paidDate': paidDate,
-      'userId': userId,
-      'createdAt': createdAt,
-      'updatedAt': updatedAt,
-      'deletedAt': deletedAt,
-    };
-  }
+  /// Firebase methods disabled to fix build issues
+  // Map<String, dynamic> toFirestoreMap() {
+  //   return {
+  //     'id': id,
+  //     'value': value,
+  //     'date': date,
+  //     'category': category,
+  //     'memberId': associatedMember.id,
+  //     'memberName': associatedMember.name,
+  //     'notes': notes,
+  //     'receiptImage': receiptImage,
+  //     'recurringTransactionId': recurringTransactionId,
+  //     'syncStatus': syncStatus,
+  //     'isPaid': isPaid,
+  //     'paidDate': paidDate,
+  //     'userId': userId,
+  //     'createdAt': createdAt,
+  //     'updatedAt': updatedAt,
+  //     'deletedAt': deletedAt,
+  //   };
+  // }
 
-  /// Cria Transaction a partir de documento Firestore
-  factory Transaction.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
-    return Transaction(
-      id: data['id'] as int?,
-      value: (data['value'] ?? 0.0).toDouble(),
-      date: (data['date'] as Timestamp).toDate(),
-      category: data['category'] ?? '',
-      associatedMember: Member(
-        id: data['memberId'] ?? 0,
-        name: data['memberName'] ?? 'Responsável',
-        relation: 'Familiar',
-        userId: 0,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-      ),
-      notes: data['notes'],
-      receiptImage: data['receiptImage'],
-      recurringTransactionId: data['recurringTransactionId'],
-      syncStatus: data['syncStatus'] ?? 'synced',
-      isPaid: data['isPaid'] ?? false,
-      paidDate: data['paidDate'] != null 
-        ? (data['paidDate'] as Timestamp).toDate()
-        : null,
-      userId: data['userId'] ?? 1,
-      createdAt: (data['createdAt'] as Timestamp).toDate(),
-      updatedAt: (data['updatedAt'] as Timestamp).toDate(),
-      deletedAt: data['deletedAt'] != null 
-        ? (data['deletedAt'] as Timestamp).toDate()
-        : null,
-    );
-  }
+  // factory Transaction.fromFirestore(DocumentSnapshot doc) {
+  //   final data = doc.data() as Map<String, dynamic>;
+  //   return Transaction(
+  //     id: data['id'] as int?,
+  //     value: (data['value'] ?? 0.0).toDouble(),
+  //     date: (data['date'] as Timestamp).toDate(),
+  //     category: data['category'] ?? '',
+  //     associatedMember: Member(
+  //       id: data['memberId'] ?? 0,
+  //       name: data['memberName'] ?? 'Responsável',
+  //       relation: 'Familiar',
+  //       userId: 0,
+  //       createdAt: DateTime.now(),
+  //       updatedAt: DateTime.now(),
+  //     ),
+  //     notes: data['notes'],
+  //     receiptImage: data['receiptImage'],
+  //     recurringTransactionId: data['recurringTransactionId'],
+  //     syncStatus: data['syncStatus'] ?? 'synced',
+  //     isPaid: data['isPaid'] ?? false,
+  //     paidDate: data['paidDate'] != null 
+  //       ? (data['paidDate'] as Timestamp).toDate()
+  //       : null,
+  //     userId: data['userId'] ?? 1,
+  //     createdAt: (data['createdAt'] as Timestamp).toDate(),
+  //     updatedAt: (data['updatedAt'] as Timestamp).toDate(),
+  //     deletedAt: data['deletedAt'] != null 
+  //       ? (data['deletedAt'] as Timestamp).toDate()
+  //       : null,
+  //   );
+  // }
 
   Transaction copyWith({
     int? id,

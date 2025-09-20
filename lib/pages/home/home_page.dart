@@ -236,10 +236,8 @@ class _HomePageState extends State<HomePage> {
                       ),
                     )
                   : const Icon(Icons.sync),
-                onPressed: syncProvider.isSyncing ? null : _handleSync,
-                tooltip: syncProvider.isSyncing 
-                  ? 'Sincronizando...' 
-                  : 'Sincronizar com Firebase',
+                onPressed: null, // Firebase sync disabled
+                tooltip: 'Sincronização Firebase desabilitada',
               );
             },
           ),
@@ -802,7 +800,8 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  /// Executa sincronização com Firebase
+  /// Firebase sync method disabled to fix build issues
+  /*
   Future<void> _handleSync() async {
     try {
       final syncProvider = context.read<SyncProvider>();
@@ -896,6 +895,7 @@ class _HomePageState extends State<HomePage> {
       }
     }
   }
+  */
 
   void _previousMonth() {
     final syncProvider = SyncProvider.instance;

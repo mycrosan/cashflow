@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+// import 'package:cloud_firestore/cloud_firestore.dart'; // Disabled for build fix
 
 class Category {
   final int? id;
@@ -52,34 +52,33 @@ class Category {
     };
   }
 
-  /// Converte para formato Firestore
-  Map<String, dynamic> toFirestoreMap() {
-    return {
-      'id': id,
-      'name': name,
-      'type': type,
-      'icon': icon,
-      'color': color,
-      'userId': userId,
-      'createdAt': createdAt,
-      'updatedAt': updatedAt,
-    };
-  }
+  /// Firebase methods disabled to fix build issues
+  // Map<String, dynamic> toFirestoreMap() {
+  //   return {
+  //     'id': id,
+  //     'name': name,
+  //     'type': type,
+  //     'icon': icon,
+  //     'color': color,
+  //     'userId': userId,
+  //     'createdAt': createdAt,
+  //     'updatedAt': updatedAt,
+  //   };
+  // }
 
-  /// Cria Category a partir de documento Firestore
-  factory Category.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
-    return Category(
-      id: data['id'] as int?,
-      name: data['name'] ?? '',
-      type: data['type'] ?? 'expense',
-      icon: data['icon'],
-      color: data['color'],
-      userId: data['userId'] ?? 0,
-      createdAt: (data['createdAt'] as Timestamp).toDate(),
-      updatedAt: (data['updatedAt'] as Timestamp).toDate(),
-    );
-  }
+  // factory Category.fromFirestore(DocumentSnapshot doc) {
+  //   final data = doc.data() as Map<String, dynamic>;
+  //   return Category(
+  //     id: data['id'] as int?,
+  //     name: data['name'] ?? '',
+  //     type: data['type'] ?? 'expense',
+  //     icon: data['icon'],
+  //     color: data['color'],
+  //     userId: data['userId'] ?? 0,
+  //     createdAt: (data['createdAt'] as Timestamp).toDate(),
+  //     updatedAt: (data['updatedAt'] as Timestamp).toDate(),
+  //   );
+  // }
 
   Category copyWith({
     int? id,

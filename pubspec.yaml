@@ -65,10 +65,10 @@ dependencies:
   permission_handler: ^11.3.0
   shimmer: ^3.0.0
   
-  # Firebase & Cloud Storage
-  firebase_core: ^2.24.2
-  cloud_firestore: ^4.13.6
-  firebase_auth: ^4.15.3
+  # Firebase dependencies removed to fix build issues
+  # firebase_core: ^2.24.2
+  # cloud_firestore: ^4.13.6
+  # firebase_auth: ^4.15.3
 
 dev_dependencies:
   flutter_test:

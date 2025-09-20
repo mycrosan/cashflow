@@ -220,3 +220,16 @@ ws://127.0.0.1:62426/Ogg5wfgfqBw=/ws
 
 fvm flutter run --debug
 
+# Android (Mi A2)
+fvm flutter run -d 11836f8
+
+# iPhone (após habilitar Modo de Desenvolvedor)
+fvm flutter run -d 00008101-001110410CD2001E
+fvm flutter run -d 1d7fa151808b45c036fcd5740b7702f120c81135
+
+# macOS
+fvm flutter run -d macos
+
+# Web
+fvm flutter run -d chrome
+
