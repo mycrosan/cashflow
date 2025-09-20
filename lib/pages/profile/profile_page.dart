@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/biometric_auth_provider.dart';
 import '../../models/user.dart';
+import '../../widgets/custom_text_field.dart';
+import '../../widgets/custom_button.dart';
 import '../admin/deleted_items_page.dart';
+import '../auth/biometric_settings_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -564,6 +568,43 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
             const SizedBox(height: 16),
+            // Configurações de Autenticação Biométrica
+            Consumer<BiometricAuthProvider>(
+              builder: (context, biometricProvider, child) {
+                if (biometricProvider.isDeviceSupported) {
+                  return Column(
+                    children: [
+                      ListTile(
+                        leading: Icon(
+                          biometricProvider.availableBiometrics.contains('face')
+                              ? Icons.face
+                              : Icons.fingerprint,
+                          color: Theme.of(context).primaryColor,
+                        ),
+                        title: const Text('Autenticação Biométrica'),
+                        subtitle: Text(
+                          biometricProvider.isBiometricEnabled
+                              ? 'Configurar autenticação biométrica'
+                              : 'Ativar autenticação biométrica',
+                        ),
+                        trailing: const Icon(Icons.arrow_forward_ios),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const BiometricSettingsPage(),
+                            ),
+                          );
+                        },
+                      ),
+                      const Divider(),
+                    ],
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+            
             ListTile(
               leading: const Icon(
                 Icons.delete_outline,

@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 // import 'package:firebase_core/firebase_core.dart';
 // import 'firebase_options.dart';
 import 'providers/auth_provider.dart';
+import 'providers/biometric_auth_provider.dart';
 import 'providers/member_provider.dart';
 import 'providers/category_provider.dart';
 import 'providers/transaction_provider.dart';
@@ -18,8 +19,7 @@ import 'providers/floating_button_provider.dart';
 import 'providers/financial_analysis_provider.dart';
 import 'providers/receipt_provider.dart';
 import 'services/database_service.dart';
-import 'pages/home/home_page.dart';
-import 'pages/auth/login_page.dart';
+import 'widgets/authentication_flow.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -47,6 +47,7 @@ class FluxoFamiliaApp extends StatelessWidget {
       providers: [
         Provider(create: (_) => DatabaseService()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => BiometricAuthProvider()),
         ChangeNotifierProvider(create: (_) => MemberProvider()),
         ChangeNotifierProvider(create: (_) => CategoryProvider()),
         ChangeNotifierProvider(create: (_) => TransactionProvider()),
@@ -110,7 +111,7 @@ class FluxoFamiliaApp extends StatelessWidget {
               Locale('pt', 'BR'),
             ],
 
-            home: authProvider.isAuthenticated ? HomePage() : LoginPage(),
+            home: const AuthenticationFlow(),
           );
         },
       ),

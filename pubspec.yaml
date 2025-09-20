@@ -65,6 +65,9 @@ dependencies:
   permission_handler: ^11.3.0
   shimmer: ^3.0.0
   
+  # Biometric Authentication
+  local_auth: ^2.3.0
+  
   # Firebase dependencies removed to fix build issues
   # firebase_core: ^2.24.2
   # cloud_firestore: ^4.13.6
