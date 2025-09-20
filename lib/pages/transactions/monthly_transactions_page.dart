@@ -28,6 +28,10 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
   bool _isLoadingMonth = false;
   bool _isSearchVisible = false;
   
+  // Variáveis para controle de gestos de swipe
+  double _panStartX = 0.0;
+  static const double _swipeThreshold = 100.0; // Distância mínima para considerar um swipe
+  
 
 
   @override
@@ -36,6 +40,36 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadMonthData();
     });
+  }
+
+  // Métodos para manipulação de gestos de swipe
+  void _handlePanUpdate(DragUpdateDetails details) {
+    // Captura a posição inicial do gesto
+    if (_panStartX == 0.0) {
+      _panStartX = details.globalPosition.dx;
+    }
+  }
+
+  void _handlePanEnd(DragEndDetails details) {
+    // Calcula a distância do swipe
+    final double panEndX = details.velocity.pixelsPerSecond.dx;
+    final double deltaX = panEndX;
+    
+    // Reset da posição inicial
+    _panStartX = 0.0;
+    
+    // Verifica se o gesto foi rápido o suficiente para ser considerado um swipe
+    if (deltaX.abs() > _swipeThreshold) {
+      if (deltaX > 0) {
+        // Swipe para direita - mês anterior
+        print('=== SWIPE GESTURE: Detectado swipe para direita - navegando para mês anterior ===');
+        _previousMonth();
+      } else {
+        // Swipe para esquerda - próximo mês
+        print('=== SWIPE GESTURE: Detectado swipe para esquerda - navegando para próximo mês ===');
+        _nextMonth();
+      }
+    }
   }
 
   @override
@@ -291,15 +325,19 @@ class _TransacoesMensaisPageState extends State<TransacoesMensaisPage> {
                 primaryColor: Theme.of(context).colorScheme.primary,
                 secondaryColor: Theme.of(context).colorScheme.secondary,
               )
-            : SingleChildScrollView(
-                child: Column(
-                  children: [
-                    // Saldo do mês
-                    _buildMonthBalance(),
-                    
-                    // Lista de transações
-                    _buildTransactionsList(),
-                  ],
+            : GestureDetector(
+                onPanUpdate: _handlePanUpdate,
+                onPanEnd: _handlePanEnd,
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      // Saldo do mês
+                      _buildMonthBalance(),
+                      
+                      // Lista de transações
+                      _buildTransactionsList(),
+                    ],
+                  ),
                 ),
               ),
     );
