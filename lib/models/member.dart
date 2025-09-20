@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+// import 'package:cloud_firestore/cloud_firestore.dart'; // Disabled for build fix
 
 class Member {
   final int? id;
@@ -47,32 +47,31 @@ class Member {
     };
   }
 
-  /// Converte para formato Firestore
-  Map<String, dynamic> toFirestoreMap() {
-    return {
-      'id': id,
-      'name': name,
-      'relation': relation,
-      'profilePicture': profilePicture,
-      'userId': userId,
-      'createdAt': createdAt,
-      'updatedAt': updatedAt,
-    };
-  }
+  /// Firebase methods disabled to fix build issues
+  // Map<String, dynamic> toFirestoreMap() {
+  //   return {
+  //     'id': id,
+  //     'name': name,
+  //     'relation': relation,
+  //     'profilePicture': profilePicture,
+  //     'userId': userId,
+  //     'createdAt': createdAt,
+  //     'updatedAt': updatedAt,
+  //   };
+  // }
 
-  /// Cria Member a partir de documento Firestore
-  factory Member.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
-    return Member(
-      id: data['id'] as int?,
-      name: data['name'] ?? '',
-      relation: data['relation'] ?? '',
-      profilePicture: data['profilePicture'],
-      userId: data['userId'] ?? 0,
-      createdAt: (data['createdAt'] as Timestamp).toDate(),
-      updatedAt: (data['updatedAt'] as Timestamp).toDate(),
-    );
-  }
+  // factory Member.fromFirestore(DocumentSnapshot doc) {
+  //   final data = doc.data() as Map<String, dynamic>;
+  //   return Member(
+  //     id: data['id'] as int?,
+  //     name: data['name'] ?? '',
+  //     relation: data['relation'] ?? '',
+  //     profilePicture: data['profilePicture'],
+  //     userId: data['userId'] ?? 0,
+  //     createdAt: (data['createdAt'] as Timestamp).toDate(),
+  //     updatedAt: (data['updatedAt'] as Timestamp).toDate(),
+  //   );
+  // }
 
   Member copyWith({
     int? id,

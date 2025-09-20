@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/biometric_auth_provider.dart';
 import '../../widgets/custom_text_field.dart';
 import '../../widgets/custom_button.dart';
+import 'biometric_login_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -119,6 +121,73 @@ class _LoginPageState extends State<LoginPage> {
                   },
                 ),
                 const SizedBox(height: 16),
+
+                // Botão de autenticação biométrica (apenas no modo login)
+                if (_isLogin)
+                  Consumer<BiometricAuthProvider>(
+                    builder: (context, biometricProvider, child) {
+                      if (biometricProvider.isDeviceSupported && 
+                          biometricProvider.isBiometricEnabled) {
+                        return Column(
+                          children: [
+                            const Row(
+                              children: [
+                                Expanded(child: Divider()),
+                                Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 16),
+                                  child: Text(
+                                    'ou',
+                                    style: TextStyle(
+                                      color: Colors.grey,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                                Expanded(child: Divider()),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            OutlinedButton.icon(
+                              onPressed: () {
+                                Navigator.of(context).pushReplacement(
+                                  MaterialPageRoute(
+                                    builder: (context) => const BiometricLoginPage(),
+                                  ),
+                                );
+                              },
+                              icon: Icon(
+                                biometricProvider.availableBiometrics.contains('face')
+                                    ? Icons.face
+                                    : Icons.fingerprint,
+                                color: Theme.of(context).primaryColor,
+                              ),
+                              label: Text(
+                                biometricProvider.availableBiometrics.contains('face')
+                                    ? 'Entrar com Face ID'
+                                    : 'Entrar com Touch ID',
+                                style: TextStyle(
+                                  color: Theme.of(context).primaryColor,
+                                ),
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                side: BorderSide(
+                                  color: Theme.of(context).primaryColor,
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                  vertical: 12,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  ),
 
                 // Mensagem de erro
                 Consumer<AuthProvider>(

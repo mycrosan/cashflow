@@ -2,9 +2,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
+// Firebase imports removed to fix build issues
+// import 'package:firebase_core/firebase_core.dart';
+// import 'firebase_options.dart';
 import 'providers/auth_provider.dart';
+import 'providers/biometric_auth_provider.dart';
 import 'providers/member_provider.dart';
 import 'providers/category_provider.dart';
 import 'providers/transaction_provider.dart';
@@ -16,23 +18,23 @@ import 'providers/sync_provider.dart';
 import 'providers/floating_button_provider.dart';
 import 'providers/financial_analysis_provider.dart';
 import 'providers/receipt_provider.dart';
+import 'providers/transaction_preference_provider.dart';
 import 'services/database_service.dart';
-import 'pages/home/home_page.dart';
-import 'pages/auth/login_page.dart';
+import 'widgets/authentication_flow.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Inicializar Firebase
-  try {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-    print('Firebase inicializado com sucesso');
-  } catch (e) {
-    print('Erro ao inicializar Firebase: $e');
-    // Continuar mesmo com erro do Firebase
-  }
+  // Firebase initialization removed to fix build issues
+  // try {
+  //   await Firebase.initializeApp(
+  //     options: DefaultFirebaseOptions.currentPlatform,
+  //   );
+  //   print('Firebase inicializado com sucesso');
+  // } catch (e) {
+  //   print('Erro ao inicializar Firebase: $e');
+  //   // Continuar mesmo com erro do Firebase
+  // }
   
   runApp(FluxoFamiliaApp());
 }
@@ -46,6 +48,7 @@ class FluxoFamiliaApp extends StatelessWidget {
       providers: [
         Provider(create: (_) => DatabaseService()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => BiometricAuthProvider()),
         ChangeNotifierProvider(create: (_) => MemberProvider()),
         ChangeNotifierProvider(create: (_) => CategoryProvider()),
         ChangeNotifierProvider(create: (_) => TransactionProvider()),
@@ -57,6 +60,7 @@ class FluxoFamiliaApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => FloatingButtonProvider()),
         ChangeNotifierProvider(create: (_) => FinancialAnalysisProvider()),
         ChangeNotifierProvider(create: (_) => ReceiptProvider()),
+        ChangeNotifierProvider(create: (_) => TransactionPreferenceProvider()),
       ],
       child: Consumer<AuthProvider>(
         builder: (context, authProvider, child) {
@@ -109,7 +113,7 @@ class FluxoFamiliaApp extends StatelessWidget {
               Locale('pt', 'BR'),
             ],
 
-            home: authProvider.isAuthenticated ? HomePage() : LoginPage(),
+            home: const AuthenticationFlow(),
           );
         },
       ),
